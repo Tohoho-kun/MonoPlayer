@@ -17,8 +17,8 @@ class MonoDspAndNormalizerTest {
         assertEquals(k1, k2)
         assertEquals(k1, k3)
 
-        val w1 = ArtistNormalizer.computeCanonicalKey("DJ WINAMP 1999 feat. K.Asai")
-        val w2 = ArtistNormalizer.computeCanonicalKey("ｄｊ ｗｉｎａｍｐ １９９９")
+        val w1 = ArtistNormalizer.computeCanonicalKey("DJ RETRO 1999 feat. Synth")
+        val w2 = ArtistNormalizer.computeCanonicalKey("ｄｊ ｒｅｔｒｏ １９９９")
         assertEquals(w1, w2)
 
         val display = ArtistNormalizer.chooseCanonicalDisplayName(

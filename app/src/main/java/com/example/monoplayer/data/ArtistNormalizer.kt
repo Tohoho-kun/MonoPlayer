@@ -5,7 +5,7 @@ import java.util.Locale
 
 /**
  * Normalizes artist names to absorb spelling/formatting variations (表記の揺れ吸収):
- * - NFKC Unicode Normalization (full-width ASCII/katakana to standard, e.g., "ｄｊ ｗｉｎａｍｐ １９９９" -> "DJ WINAMP 1999")
+ * - NFKC Unicode Normalization (full-width ASCII/katakana to standard, e.g., "ｄｊ ｒｅｔｒｏ １９９９" -> "DJ RETRO 1999")
  * - Case-insensitive matching
  * - "Artist, The" -> "The Artist"
  * - Strips featuring / collaboration suffixes ("feat.", "ft.", "featuring", "with", "cv:") for canonical artist grouping while keeping raw artist metadata intact
@@ -59,7 +59,7 @@ object ArtistNormalizer {
     /**
      * Picks the cleanest, most standard display name from a collection of raw artist variations
      * (e.g., ["Mono Lab, The", "The Mono Lab"] -> "The Mono Lab",
-     *  ["DJ WINAMP 1999 feat. K.Asai", "ｄｊ ｗｉｎａｍｐ １９９９"] -> "DJ WINAMP 1999").
+     *  ["DJ RETRO 1999 feat. Synth", "ｄｊ ｒｅｔｒｏ １９９９"] -> "DJ RETRO 1999").
      */
     fun chooseCanonicalDisplayName(
         rawVariations: Collection<String>,

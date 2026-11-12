@@ -19,7 +19,7 @@ class TenBandEqualizer(sampleRate: Int = 44100) {
         val PRESETS: Map<String, FloatArray> = linkedMapOf(
             "Flat" to floatArrayOf(0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f),
             "Mono Sparkle (高域輝き)" to floatArrayOf(0.5f, 1.0f, 0.0f, -0.5f, 0.0f, 1.0f, 2.5f, 3.8f, 4.2f, 3.5f),
-            "Winamp Full Bass & Treble" to floatArrayOf(4.5f, 3.5f, 1.5f, -1.5f, -2.0f, -1.0f, 1.5f, 3.5f, 4.8f, 5.2f),
+            "Classic Full Bass & Treble" to floatArrayOf(4.5f, 3.5f, 1.5f, -1.5f, -2.0f, -1.0f, 1.5f, 3.5f, 4.8f, 5.2f),
             "90s Car Stereo Loudness" to floatArrayOf(5.0f, 4.0f, 1.8f, 0.0f, -1.2f, 0.0f, 1.2f, 2.8f, 4.2f, 4.5f),
             "Vocal Presence (ボーカル強調)" to floatArrayOf(-2.0f, -1.0f, 0.0f, 1.5f, 3.5f, 4.0f, 3.2f, 1.5f, 0.5f, 0.0f),
             "Jazz / Warm Club" to floatArrayOf(2.5f, 2.0f, 1.0f, 1.5f, -1.0f, -1.0f, 0.0f, 1.2f, 2.0f, 2.5f),

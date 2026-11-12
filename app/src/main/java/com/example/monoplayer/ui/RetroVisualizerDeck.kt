@@ -64,8 +64,8 @@ fun RetroVisualizerDeck(
     val peakHold = remember { FloatArray(32) { 0.05f } }
     val peakVelocity = remember { FloatArray(32) { 0f } }
 
-    val fireState = remember { WmpFireState() }
-    val batteryState = remember { WmpBatteryState() }
+    val fireState = remember { Y2kFireState() }
+    val batteryState = remember { Y2kOrbitalState() }
     val rainGpuRenderer = remember {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             RainGlassGpuRenderer.createOrNull()
@@ -199,10 +199,10 @@ fun RetroVisualizerDeck(
                             rainBitmap.prepareToDraw()
                         }
                     }
-                    VisualizerStyle.WMP7_FIRESTORM_2000 -> {
+                    VisualizerStyle.Y2K_FIRESTORM_2000 -> {
                         fireState.step(smoothedSpec, bassNow)
                     }
-                    VisualizerStyle.WMP_BATTERY_2000 -> {
+                    VisualizerStyle.Y2K_ORBITAL_2000 -> {
                         if (subTick % 2 == 0) {
                             batteryState.pushFrame(smoothedSpec, frame.waveform, phase, bassNow)
                         }
@@ -275,7 +275,7 @@ fun RetroVisualizerDeck(
                     )
                 }
 
-                val isLuxury = style == VisualizerStyle.WINAMP_SPECTRUM ||
+                val isLuxury = style == VisualizerStyle.CLASSIC_CLUB_SPECTRUM ||
                         style == VisualizerStyle.CAR_STEREO_VFD ||
                         style == VisualizerStyle.CYBER_OSCILLOSCOPE
 
@@ -304,7 +304,7 @@ fun RetroVisualizerDeck(
                         highDrive = highDrive,
                         rmsDrive = rmsDrive
                     )
-                    VisualizerStyle.WINAMP_SPECTRUM -> drawVipClubLaserAndMirror(
+                    VisualizerStyle.CLASSIC_CLUB_SPECTRUM -> drawVipClubLaserAndMirror(
                         specNorm = smoothedSpec,
                         naiveNorm = smoothedNaive,
                         peaks = peakHold,
@@ -348,13 +348,13 @@ fun RetroVisualizerDeck(
                         vuDb = syncedTelemetry.vuLeftDb,
                         textMeasurer = textMeasurer
                     )
-                    VisualizerStyle.WMP7_FIRESTORM_2000 -> drawWmp7FireStorm2000(
+                    VisualizerStyle.Y2K_FIRESTORM_2000 -> drawY2kFireStorm2000(
                         fireState = fireState,
                         specNorm = smoothedSpec,
                         peaks = peakHold,
                         waveform = syncedTelemetry.waveform
                     )
-                    VisualizerStyle.WMP_BATTERY_2000 -> drawWmpBatteryAmbience2000(
+                    VisualizerStyle.Y2K_ORBITAL_2000 -> drawY2kOrbital2000(
                         batteryState = batteryState,
                         bassDrive = bassDrive,
                         highDrive = highDrive,

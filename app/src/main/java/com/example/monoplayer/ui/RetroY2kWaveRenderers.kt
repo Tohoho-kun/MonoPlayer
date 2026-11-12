@@ -14,7 +14,7 @@ import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.random.Random
 
-internal class WmpFireState(val cols: Int = 64, val rows: Int = 42) {
+internal class Y2kFireState(val cols: Int = 64, val rows: Int = 42) {
     val heat = IntArray(cols * rows)
     private val rng = Random(2000)
 
@@ -63,11 +63,11 @@ internal class WmpFireState(val cols: Int = 64, val rows: Int = 42) {
 }
 
 /**
- * Windows Me (2000) Windows Media Player 7 "Bars and Waves: FireStorm + Scope".
- * Chunky low-res DirectDraw 256-color paletted fire buffer + blocky lime peak caps + jagged 1px wave.
+ * Early-2000s Retro PC Fire & Waveform Visualizer Style.
+ * Chunky low-res 256-color paletted fire buffer + blocky lime peak caps + jagged 1px wave.
  */
-internal fun DrawScope.drawWmp7FireStorm2000(
-    fireState: WmpFireState,
+internal fun DrawScope.drawY2kFireStorm2000(
+    fireState: Y2kFireState,
     specNorm: FloatArray,
     peaks: FloatArray,
     waveform: FloatArray
@@ -89,7 +89,7 @@ internal fun DrawScope.drawWmp7FireStorm2000(
             val hv = fireState.heat[rowOff + x]
             if (hv >= 12) {
                 drawRect(
-                    color = WmpFireState.firePaletteColor(hv),
+                    color = Y2kFireState.firePaletteColor(hv),
                     topLeft = Offset(x * pixW, py),
                     size = Size(pixW + 0.6f, pixH + 0.6f)
                 )
@@ -97,7 +97,7 @@ internal fun DrawScope.drawWmp7FireStorm2000(
         }
     }
 
-    // 2. Classic WMP7 "Bars" blocky Lime-Green / Acid-Yellow quantized spectrum & peak blocks
+    // 2. Classic retro blocky Lime-Green / Acid-Yellow quantized spectrum & peak blocks
     val barCount = 32
     val barW = w / barCount
     for (b in 0 until barCount) {
@@ -127,7 +127,7 @@ internal fun DrawScope.drawWmp7FireStorm2000(
     }
 }
 
-internal class WmpBatteryState(val historySize: Int = 9, val vertices: Int = 24) {
+internal class Y2kOrbitalState(val historySize: Int = 9, val vertices: Int = 24) {
     val radiiHistory = Array(historySize) { FloatArray(vertices) { 0.25f } }
     val angleHistory = FloatArray(historySize)
     val paletteHistory = IntArray(historySize)
@@ -157,11 +157,11 @@ internal class WmpBatteryState(val historySize: Int = 9, val vertices: Int = 24)
 }
 
 /**
- * Windows Me (2000) WMP7 "Battery / Ambience / Plenoptic".
- * Unrefined garish early-digital primary/secondary color cycling, zooming polygon feedback trails & scanlines.
+ * Early-2000s Psychedelic Geometric Trail Visualizer Style.
+ * Early-digital primary/secondary color cycling, zooming polygon feedback trails & scanlines.
  */
-internal fun DrawScope.drawWmpBatteryAmbience2000(
-    batteryState: WmpBatteryState,
+internal fun DrawScope.drawY2kOrbital2000(
+    batteryState: Y2kOrbitalState,
     bassDrive: Float,
     highDrive: Float,
     phase: Float
@@ -185,7 +185,7 @@ internal fun DrawScope.drawWmpBatteryAmbience2000(
     )
 
     val tempRadii = FloatArray(batteryState.vertices)
-    // Draw oldest zooming trails first -> newest sharpest polygon on top (classic DirectDraw zoom-feedback!)
+    // Draw oldest zooming trails first -> newest sharpest polygon on top
     for (age in (batteryState.historySize - 1) downTo 0) {
         val (baseAngle, palTick) = batteryState.getSnapshot(age, tempRadii)
         val zoomScale = 1.0f + age * (0.14f + bassDrive * 0.08f)
@@ -201,7 +201,7 @@ internal fun DrawScope.drawWmpBatteryAmbience2000(
             val py = cy + sin(ang) * r
             if (v == 0) poly.moveTo(px, py) else poly.lineTo(px, py)
 
-            // Plenoptic / Spikes vertex squares on recent frames
+            // Geometric vertex squares on recent frames
             if (age <= 1) {
                 drawRect(
                     color = clashingPalette[(palTick + v) % clashingPalette.size],

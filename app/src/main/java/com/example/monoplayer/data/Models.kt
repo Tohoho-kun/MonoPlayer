@@ -97,7 +97,7 @@ enum class VisualizerStyle(
         eraTag = "RAINY GLASS",
         description = "雨粒の屈折レンズ・結露の滲み・流れ落ちる水滴軌跡越しに透けるジャケット"
     ),
-    WINAMP_SPECTRUM(
+    CLASSIC_CLUB_SPECTRUM(
         label = "Royal Club Gold & Amethyst Mirror",
         eraTag = "LUXURY MIRROR",
         description = "黒・金・紫・濃紺のスポットライトと鏡面フロア反射スペクトラム"
@@ -122,15 +122,15 @@ enum class VisualizerStyle(
         eraTag = "'95 LED & STN",
         description = "黄緑バックライトSTN液晶とエポキシ3色LED（緑・橙・赤）のステップレベルメーター"
     ),
-    WMP7_FIRESTORM_2000(
-        label = "Windows Me WMP7「Bars & Waves: FireStorm」",
-        eraTag = "'00 WMP FIRE",
-        description = "2000年 WMP7風・低解像度256色パレット炎セルオートマトン＆1pxギザギザ波形"
+    Y2K_FIRESTORM_2000(
+        label = "2000年初期レトロPC「FireStorm 炎スペクトラム」",
+        eraTag = "'00 FIRE WAVE",
+        description = "2000年初期PC風・低解像度256色パレット炎セルオートマトン＆1pxギザギザ波形"
     ),
-    WMP_BATTERY_2000(
-        label = "Windows Me WMP7「Battery / Ambience」",
-        eraTag = "'00 WMP PSYCH",
-        description = "初期デジタル特有の原色ケバケバしい回転ポリゴン残像＆Spikes幾何学エフェクト"
+    Y2K_ORBITAL_2000(
+        label = "2000年初期レトロPC「Orbital 幾何学トレイル」",
+        eraTag = "'00 ORBITAL",
+        description = "初期デジタル特有の原色ケバケバしい回転ポリゴン残像＆スパイク幾何学エフェクト"
     );
 
     fun nextStyle(): VisualizerStyle {

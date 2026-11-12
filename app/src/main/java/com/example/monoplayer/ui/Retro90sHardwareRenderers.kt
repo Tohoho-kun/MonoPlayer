@@ -21,7 +21,7 @@ import kotlin.math.roundToInt
 import kotlin.math.sin
 
 /**
- * 1992 Japanese "Bubble Compo" / 2DIN Car Audio (Kenwood ROXY / Pioneer Carrozzeria SFC)
+ * 1992 Japanese "Bubble Compo" / 2DIN Car Audio VFD Style
  * Vacuum Fluorescent Display (VFD): ZnO:Zn Blue-Green, Amber & Red-Orange phosphors + cathode heater wires.
  */
 internal fun DrawScope.drawBubbleVfd1992(
