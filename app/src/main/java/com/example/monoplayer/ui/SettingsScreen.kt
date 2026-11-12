@@ -50,8 +50,9 @@ fun SettingsScreen(
     var isSyncSliderExpanded by remember { mutableStateOf(false) }
     var isCrossfadeSliderExpanded by remember { mutableStateOf(false) }
 
-    // ヘルプダイアログ表示用
+    // ヘルプダイアログ & OSSライセンスダイアログ表示用
     var activeHelpItem by remember { mutableStateOf<SettingHelpItem?>(null) }
+    var showLicensesDialog by remember { mutableStateOf(false) }
 
     val gold = Color(0xFFC8A24A)
     val cardBg = Color(0xFF0C1022)
@@ -151,7 +152,7 @@ fun SettingsScreen(
                         onClick = {
                             activeHelpItem = SettingHelpItem(
                                 title = "ビジュアライザー・デザイン",
-                                description = "雨粒と結露ガラス越しに透けるジャケット屈折エフェクトをはじめ、高級クラブ演出、90年代バブルコンポVFD、3色LEDメーター、2000年初期WMP7再現モードなど全8種類のテーマから選択できます。"
+                                description = "雨粒と結露ガラス越しに透けるジャケット屈折エフェクトをはじめ、高級クラブ演出、90年代バブルコンポVFD、3色LEDメーター、2000年初期レトロPC波形モードなど全8種類のテーマから選択できます。"
                             )
                         },
                         modifier = Modifier.size(28.dp)
@@ -496,6 +497,39 @@ fun SettingsScreen(
                 viewModel.updateDisplayConfig(displayConfig.copy(showAudioFormatBadge = it))
             }
         }
+
+        // Open-Source Licenses & Copyright Notice Card
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .background(cardBg)
+                .border(1.dp, cardBorder, RoundedCornerShape(16.dp))
+                .clickable { showLicensesDialog = true }
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "オープンソースライセンス / 使用ライブラリ",
+                    color = Color.White,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Media3・Jetpack Compose・Coil・Kotlin 等の権利表記",
+                    color = Color(0xFF94A3B8),
+                    fontSize = 11.sp
+                )
+            }
+            Text(
+                text = "表示 ›",
+                color = gold,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
 
     // 共通ヘルプダイアログ
@@ -526,6 +560,84 @@ fun SettingsScreen(
             containerColor = Color(0xFF14192F),
             shape = RoundedCornerShape(14.dp)
         )
+    }
+
+    if (showLicensesDialog) {
+        AlertDialog(
+            onDismissRequest = { showLicensesDialog = false },
+            title = {
+                Text(
+                    text = "オープンソースライセンス・権利表記",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            },
+            text = {
+                Column(
+                    modifier = Modifier
+                        .heightIn(max = 360.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text(
+                        text = "本アプリは以下のオープンソースソフトウェア（いずれも Apache License 2.0）を使用しています。",
+                        fontSize = 12.sp,
+                        color = Color(0xFFCBD5E1),
+                        lineHeight = 17.sp
+                    )
+                    LicenseNoticeBlock(
+                        name = "AndroidX Media3 (ExoPlayer / MediaSession)",
+                        detail = "androidx.media3:media3-{exoplayer,session,common} 1.5.1\nCopyright The Android Open Source Project — Apache License 2.0"
+                    )
+                    LicenseNoticeBlock(
+                        name = "Jetpack Compose & AndroidX Libraries",
+                        detail = "Compose BOM 2026.03.01, Core KTX 1.18.0, Activity 1.13.0, Lifecycle 2.10.0, Navigation3 1.0.1, DocumentFile 1.0.1\nCopyright The Android Open Source Project — Apache License 2.0"
+                    )
+                    LicenseNoticeBlock(
+                        name = "Coil Compose",
+                        detail = "io.coil-kt:coil-compose 2.7.0\nCopyright Coil Contributors — Apache License 2.0"
+                    )
+                    LicenseNoticeBlock(
+                        name = "Kotlin & kotlinx.serialization",
+                        detail = "Kotlin 2.3.20 / kotlinx-serialization-json 1.8.0\nCopyright JetBrains s.r.o. and Kotlin Contributors — Apache License 2.0"
+                    )
+                    LicenseNoticeBlock(
+                        name = "monoplayer_core (Rust Native DSP)",
+                        detail = "Pure Rust std 実装（外部 Rust クレート依存なし）"
+                    )
+                    Text(
+                        text = "Apache License 2.0 全文: https://www.apache.org/licenses/LICENSE-2.0",
+                        fontSize = 10.sp,
+                        fontFamily = FontFamily.Monospace,
+                        color = Color(0xFF94A3B8)
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showLicensesDialog = false }) {
+                    Text("閉じる", color = gold, fontWeight = FontWeight.Bold)
+                }
+            },
+            containerColor = Color(0xFF14192F),
+            shape = RoundedCornerShape(14.dp)
+        )
+    }
+}
+
+@Composable
+private fun LicenseNoticeBlock(name: String, detail: String) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .background(Color(0xFF0A0E1E))
+            .border(1.dp, Color(0xFF1F2A4A), RoundedCornerShape(8.dp))
+            .padding(8.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+        Text(text = name, color = Color(0xFFC8A24A), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+        Text(text = detail, color = Color(0xFFCBD5E1), fontSize = 10.sp, lineHeight = 14.sp)
     }
 }
 

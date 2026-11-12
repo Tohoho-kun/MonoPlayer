@@ -396,7 +396,7 @@ fun DspAndEqScreen(
                 }
             }
 
-            // 10 Vertical Faders (Winamp / Hardware Graphic EQ Rack Style)
+            // 10 Vertical Faders (Classic Hardware Graphic EQ Rack Style)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()

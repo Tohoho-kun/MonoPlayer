@@ -1,0 +1,22 @@
+MonoPlayer
+Copyright (c) MonoPlayer Contributors
+
+This product includes open-source software components listed below and in THIRD_PARTY_LICENSES.md.
+
+========================================================================
+Apache License 2.0 Notices
+========================================================================
+
+This project includes code and libraries licensed under the Apache License,
+Version 2.0 (https://www.apache.org/licenses/LICENSE-2.0):
+
+- AndroidX / Jetpack Compose / AndroidX Media3 (ExoPlayer, MediaSession)
+  Copyright The Android Open Source Project
+  (Including theme template files derived from Android Open Source Project
+  Material Theme Builder templates in app/src/main/kotlin/com/example/monoplayer/ui/theme/)
+
+- Coil (io.coil-kt:coil-compose)
+  Copyright Coil Contributors
+
+- Kotlin Standard Library & kotlinx.serialization / kotlinx.coroutines
+  Copyright JetBrains s.r.o. and Kotlin Programming Language contributors

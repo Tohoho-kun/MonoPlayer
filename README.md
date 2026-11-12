@@ -46,3 +46,8 @@ cd rust/monoplayer_core
 cargo build --release --target aarch64-linux-android
 cargo build --release --target x86_64-linux-android
 ```
+
+## Open Source Licenses & Notices
+
+All third-party libraries and copyright/license attributions used by MonoPlayer are listed in [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md) and [NOTICE](NOTICE), and can also be viewed in-app via **設定 → オープンソースライセンス**.
+

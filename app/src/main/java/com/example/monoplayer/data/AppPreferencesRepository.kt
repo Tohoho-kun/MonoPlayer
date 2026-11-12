@@ -24,7 +24,7 @@ class AppPreferencesRepository(context: Context) {
                 Playlist(
                     id = "pl_starter_90s",
                     name = "90s Night Wangan Drive",
-                    description = "カーステレオVFD・Winamp世代向けドライビングリスト",
+                    description = "カーステレオVFD・90s〜00sレトロ世代向けドライビングリスト",
                     trackIds = defaultDemoTrackIds.takeLast(2)
                 )
             )

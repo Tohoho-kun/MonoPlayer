@@ -50,7 +50,7 @@ object DemoAudioGenerator {
             id = "demo_antiphase_cymbal",
             fileName = "03_cyber_highway_drive.wav",
             title = "Midnight Wangan VFD Groove",
-            rawArtist = "DJ WINAMP 1999 feat. K.Asai",
+            rawArtist = "DJ RETRO 1999 feat. Synth",
             album = "90s Car Stereo Classics",
             trackNumber = 1,
             genre = "Eurobeat / Synth",
@@ -60,7 +60,7 @@ object DemoAudioGenerator {
             id = "demo_night_cruiser",
             fileName = "04_neon_spectrum_cruise.wav",
             title = "Neon Spectrum Analyzer Cruise",
-            rawArtist = "ｄｊ ｗｉｎａｍｐ １９９９", // Full-width + lowercase variation of "DJ WINAMP 1999"
+            rawArtist = "ｄｊ ｒｅｔｒｏ １９９９", // Full-width + lowercase variation of "DJ RETRO 1999"
             album = "90s Car Stereo Classics",
             trackNumber = 2,
             genre = "City Pop / Chill",
