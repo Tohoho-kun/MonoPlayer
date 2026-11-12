@@ -1128,6 +1128,62 @@ pub extern "system" fn Java_com_example_monoplayer_dsp_RustNativeBridge_nativeVe
 }
 
 #[no_mangle]
+pub extern "system" fn Java_com_example_monoplayer_dsp_RustNativeBridge_nativeVehicleTrackerOnImuSample(
+    env: JNIEnvPtr,
+    _cls: JClass,
+    handle: i64,
+    ax: f32,
+    ay: f32,
+    az: f32,
+    gx: f32,
+    gy: f32,
+    gz: f32,
+    wx: f32,
+    wy: f32,
+    wz: f32,
+    has_gyro: u8,
+    dt_sec: f32,
+    is_gps_lost: u8,
+    out5_arr: JFloatArray,
+) -> f32 {
+    catch_unwind(AssertUnwindSafe(|| {
+        if handle == 0 {
+            return 0.0_f32;
+        }
+        unsafe {
+            let tracker = &mut *(handle as *mut VehicleTrackerEngine);
+            let out = tracker.on_imu_sample(
+                ax,
+                ay,
+                az,
+                gx,
+                gy,
+                gz,
+                wx,
+                wy,
+                wz,
+                has_gyro != 0,
+                dt_sec,
+                is_gps_lost != 0,
+            );
+            jni_set_f32(
+                env,
+                out5_arr,
+                &[
+                    out.smoothed_speed_kmh,
+                    out.source_code as f32,
+                    if out.is_forward_calibrated { 1.0 } else { 0.0 },
+                    out.a_fwd,
+                    out.a_lat,
+                ],
+            );
+            out.smoothed_speed_kmh
+        }
+    }))
+    .unwrap_or(0.0)
+}
+
+#[no_mangle]
 pub extern "system" fn Java_com_example_monoplayer_dsp_RustNativeBridge_nativeVehicleTrackerCalcIntensity(
     _env: JNIEnvPtr,
     _cls: JClass,

@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -148,14 +149,19 @@ fun CarCockpitStage(
         }
     }
 
-    val currentSpeed = activeTelemetry.detectedSpeedKmh
+    val isHandheld = activeTelemetry.speedSource == SpeedTrackingSource.HANDHELD
+    val currentSpeed = if (isHandheld) 0f else activeTelemetry.detectedSpeedKmh
     val animatedSpeed by animateFloatAsState(
         targetValue = currentSpeed,
         animationSpec = tween(durationMillis = 350),
         label = "car_speed"
     )
 
-    val clampedIntensity = config.carCabinIntensity.coerceIn(0f, 2f)
+    val clampedIntensity = if (isHandheld && config.autoSpeedEnabled) {
+        0f
+    } else {
+        config.carCabinIntensity.coerceIn(0f, 2f)
+    }
     val intensityPercent = clampedIntensity * 100f
     val speedGainDb = clampedIntensity * 4.4f
     val liveBassPunchDb = activeTelemetry.carBassBoostDb
@@ -255,6 +261,28 @@ fun CarCockpitStage(
                         }
                     }
 
+                    if (config.autoSpeedEnabled &&
+                        !isHandheld &&
+                        activeTelemetry.speedSource != SpeedTrackingSource.OFF
+                    ) {
+                        val calibrated = activeTelemetry.carForwardCalibrated
+                        val calColor = if (calibrated) emeraldSafe else Color(0xFFFBBF24)
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(calColor.copy(alpha = 0.16f))
+                                .border(1.dp, calColor.copy(alpha = 0.55f), RoundedCornerShape(6.dp))
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = if (calibrated) "進行軸ロック" else "進行軸学習中",
+                                color = calColor,
+                                fontSize = 8.5.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
@@ -263,6 +291,7 @@ fun CarCockpitStage(
                                     SpeedTrackingSource.GPS -> Color(0xFF0369A1).copy(alpha = 0.35f)
                                     SpeedTrackingSource.TUNNEL_IMU -> Color(0xFFB45309).copy(alpha = 0.35f)
                                     SpeedTrackingSource.STOPPED -> Color(0xFF334155).copy(alpha = 0.35f)
+                                    SpeedTrackingSource.HANDHELD -> Color(0xFF991B1B).copy(alpha = 0.50f)
                                     SpeedTrackingSource.OFF -> Color(0xFF1E293B).copy(alpha = 0.35f)
                                 }
                             )
@@ -272,6 +301,7 @@ fun CarCockpitStage(
                                     SpeedTrackingSource.GPS -> skyBlue.copy(alpha = 0.6f)
                                     SpeedTrackingSource.TUNNEL_IMU -> Color(0xFFFBBF24).copy(alpha = 0.6f)
                                     SpeedTrackingSource.STOPPED -> Color(0xFF94A3B8).copy(alpha = 0.4f)
+                                    SpeedTrackingSource.HANDHELD -> coralFlash.copy(alpha = 0.85f)
                                     SpeedTrackingSource.OFF -> Color(0xFF475569).copy(alpha = 0.4f)
                                 },
                                 RoundedCornerShape(6.dp)
@@ -284,12 +314,41 @@ fun CarCockpitStage(
                                 SpeedTrackingSource.GPS -> skyBlue
                                 SpeedTrackingSource.TUNNEL_IMU -> Color(0xFFFBBF24)
                                 SpeedTrackingSource.STOPPED -> Color(0xFFCBD5E1)
+                                SpeedTrackingSource.HANDHELD -> Color(0xFFFF8A80)
                                 SpeedTrackingSource.OFF -> Color(0xFF94A3B8)
                             },
                             fontSize = 9.sp,
                             fontWeight = FontWeight.Bold
                         )
                     }
+                }
+            }
+
+            if (isHandheld) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(coralFlash.copy(alpha = 0.16f))
+                        .border(1.dp, coralFlash.copy(alpha = 0.55f), RoundedCornerShape(8.dp))
+                        .padding(horizontal = 9.dp, vertical = 5.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Warning,
+                        contentDescription = null,
+                        tint = Color(0xFFFF8A80),
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Text(
+                        text = "手持ち検出中 • GPS一時停止 (固定で自動再開)",
+                        color = Color(0xFFFFCDD2),
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
             }
 
@@ -300,6 +359,7 @@ fun CarCockpitStage(
                 intensityPercent = intensityPercent,
                 speedGainDb = speedGainDb,
                 measuredLufs = activeTelemetry.measuredLufs,
+                isHandheld = isHandheld,
                 artworkBitmap = artworkBitmap,
                 amberGold = amberGold,
                 cyanAccent = cyanAccent,
@@ -352,6 +412,7 @@ private fun CarSpeedHeaderStrip(
     intensityPercent: Float,
     speedGainDb: Float,
     measuredLufs: Float,
+    isHandheld: Boolean,
     artworkBitmap: Bitmap?,
     amberGold: Color,
     cyanAccent: Color,
@@ -361,8 +422,12 @@ private fun CarSpeedHeaderStrip(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFF0A0E19))
-            .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(12.dp))
+            .background(if (isHandheld) Color(0xFF1A0B0E) else Color(0xFF0A0E19))
+            .border(
+                1.dp,
+                if (isHandheld) coralFlash.copy(alpha = 0.45f) else Color(0xFF1E293B),
+                RoundedCornerShape(12.dp)
+            )
             .padding(horizontal = 10.dp, vertical = 6.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -381,7 +446,7 @@ private fun CarSpeedHeaderStrip(
                     val arcSize = Size(size.width - strokeW, size.height - strokeW)
                     val arcOffset = Offset(strokeW / 2f, strokeW / 2f)
                     drawArc(
-                        color = Color(0xFF1E293B),
+                        color = if (isHandheld) coralFlash.copy(alpha = 0.25f) else Color(0xFF1E293B),
                         startAngle = 135f,
                         sweepAngle = 270f,
                         useCenter = false,
@@ -389,7 +454,9 @@ private fun CarSpeedHeaderStrip(
                         size = arcSize,
                         style = Stroke(width = strokeW, cap = StrokeCap.Round)
                     )
-                    val frac = if (config.autoSpeedEnabled) {
+                    val frac = if (isHandheld) {
+                        0f
+                    } else if (config.autoSpeedEnabled) {
                         (animatedSpeed / 120f).coerceIn(0f, 1f)
                     } else {
                         (intensityPercent / 200f).coerceIn(0f, 1f)
@@ -410,9 +477,13 @@ private fun CarSpeedHeaderStrip(
                     }
                 }
                 Text(
-                    text = if (config.autoSpeedEnabled) "${animatedSpeed.toInt()}" else "${intensityPercent.toInt()}",
-                    color = Color.White,
-                    fontSize = 15.sp,
+                    text = when {
+                        isHandheld -> "HOLD"
+                        config.autoSpeedEnabled -> "${animatedSpeed.toInt()}"
+                        else -> "${intensityPercent.toInt()}"
+                    },
+                    color = if (isHandheld) Color(0xFFFF8A80) else Color.White,
+                    fontSize = if (isHandheld) 10.sp else 15.sp,
                     fontWeight = FontWeight.ExtraBold,
                     fontFamily = FontFamily.Monospace
                 )
@@ -424,27 +495,31 @@ private fun CarSpeedHeaderStrip(
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Text(
-                        text = if (config.autoSpeedEnabled) "${animatedSpeed.toInt()} km/h" else "手動 ${intensityPercent.toInt()}%",
-                        color = Color.White,
+                        text = when {
+                            isHandheld -> "0 km/h (手持ち)"
+                            config.autoSpeedEnabled -> "${animatedSpeed.toInt()} km/h"
+                            else -> "手動 ${intensityPercent.toInt()}%"
+                        },
+                        color = if (isHandheld) Color(0xFFFFCDD2) else Color.White,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         fontFamily = FontFamily.Monospace
                     )
                     Text(
-                        text = "補正 ${intensityPercent.toInt()}%",
-                        color = amberGold,
+                        text = if (isHandheld) "GPS停止" else "補正 ${intensityPercent.toInt()}%",
+                        color = if (isHandheld) Color(0xFFFF8A80) else amberGold,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         fontFamily = FontFamily.Monospace
                     )
                 }
                 Text(
-                    text = if (config.autoSpeedEnabled) {
-                        "目標 ${config.carTargetLufs.toInt()}LUFS • 実測 ${"%.1f".format(measuredLufs)} • 係数 x${"%.2f".format(config.speedCompensationFactor)}"
-                    } else {
-                        "目標 ${config.carTargetLufs.toInt()}LUFS • 実測 ${"%.1f".format(measuredLufs)} • トリム +${"%.1f".format(speedGainDb)}dB"
+                    text = when {
+                        isHandheld -> "手持ち検出中 • GPS一時停止 (固定で自動再開)"
+                        config.autoSpeedEnabled -> "目標 ${config.carTargetLufs.toInt()}LUFS • 実測 ${"%.1f".format(measuredLufs)} • 係数 x${"%.2f".format(config.speedCompensationFactor)}"
+                        else -> "目標 ${config.carTargetLufs.toInt()}LUFS • 実測 ${"%.1f".format(measuredLufs)} • トリム +${"%.1f".format(speedGainDb)}dB"
                     },
-                    color = Color(0xFF94A3B8),
+                    color = if (isHandheld) Color(0xFFFCA5A5) else Color(0xFF94A3B8),
                     fontSize = 9.sp,
                     fontFamily = FontFamily.Monospace,
                     maxLines = 1,

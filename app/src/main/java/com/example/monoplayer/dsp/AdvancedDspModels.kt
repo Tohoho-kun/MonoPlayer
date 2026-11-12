@@ -36,7 +36,8 @@ enum class SpeedTrackingSource(val label: String) {
     OFF("OFF"),
     GPS("GPS 測位中"),
     TUNNEL_IMU("トンネル内推測 (IMU)"),
-    STOPPED("アイドリング停車")
+    STOPPED("アイドリング停車"),
+    HANDHELD("手持ち検出中 (GPS停止)")
 }
 
 @Serializable

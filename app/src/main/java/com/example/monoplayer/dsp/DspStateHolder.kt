@@ -28,6 +28,7 @@ data class VisualizerTelemetry(
     val declipMaxPeak: Float = 0f,                           // Reconstructed crest peak amplitude
     val detectedSpeedKmh: Float = 0f,                        // GPS/IMU detected vehicle speed (km/h)
     val speedSource: SpeedTrackingSource = SpeedTrackingSource.OFF, // Active tracking source
+    val carForwardCalibrated: Boolean = false,               // Whether 3D holder forward axis is calibrated
     val carPreBoostDb: Float = -60f,                         // Pre-loudness/EQ window peak level (dBFS)
     val carPostBoostDb: Float = -60f,                        // Post-boost pre-limiter window peak level (dBFS)
     val carOutputDb: Float = -60f,                           // Final limited output window peak level (dBFS)
@@ -148,15 +149,37 @@ object DspStateHolder {
 
     @Volatile var currentDetectedSpeedKmh: Float = 0f
     @Volatile var currentSpeedSource: SpeedTrackingSource = SpeedTrackingSource.OFF
+    @Volatile var currentCarForwardCalibrated: Boolean = false
 
     private val _speedTrackingFlow = MutableStateFlow(Pair(0f, SpeedTrackingSource.OFF))
     val speedTrackingFlow: StateFlow<Pair<Float, SpeedTrackingSource>> = _speedTrackingFlow.asStateFlow()
 
-    fun updateVehicleSpeed(speedKmh: Float, source: SpeedTrackingSource) {
-        val clamped = speedKmh.coerceAtLeast(0f)
+    private val _carForwardCalibratedFlow = MutableStateFlow(false)
+    val carForwardCalibratedFlow: StateFlow<Boolean> = _carForwardCalibratedFlow.asStateFlow()
+
+    fun updateVehicleSpeed(
+        speedKmh: Float,
+        source: SpeedTrackingSource,
+        forwardCalibrated: Boolean = false
+    ) {
+        val clamped = if (speedKmh.isFinite()) speedKmh.coerceAtLeast(0f) else 0f
         currentDetectedSpeedKmh = clamped
         currentSpeedSource = source
+        currentCarForwardCalibrated = forwardCalibrated
         _speedTrackingFlow.value = Pair(clamped, source)
+        _carForwardCalibratedFlow.value = forwardCalibrated
+
+        val currentTelemetry = _telemetry.value
+        if (currentTelemetry.detectedSpeedKmh != clamped ||
+            currentTelemetry.speedSource != source ||
+            currentTelemetry.carForwardCalibrated != forwardCalibrated
+        ) {
+            _telemetry.value = currentTelemetry.copy(
+                detectedSpeedKmh = clamped,
+                speedSource = source,
+                carForwardCalibrated = forwardCalibrated
+            )
+        }
     }
 
     fun updateLoudnessConfig(config: LoudnessConfig) {
@@ -228,9 +251,14 @@ object DspStateHolder {
         queuedStreamMs: Long = 0L,
         flushGen: Int = syncBuffer.flushGeneration
     ) {
-        syncBuffer.push(data, produceRealtimeMs, queuedStreamMs, flushGen)
+        val enriched = if (data.carForwardCalibrated == currentCarForwardCalibrated) {
+            data
+        } else {
+            data.copy(carForwardCalibrated = currentCarForwardCalibrated)
+        }
+        syncBuffer.push(enriched, produceRealtimeMs, queuedStreamMs, flushGen)
         // Expose latency-compensated frame to general StateFlow observers as well
-        _telemetry.value = syncBuffer.sampleAt(produceRealtimeMs) ?: data
+        _telemetry.value = syncBuffer.sampleAt(produceRealtimeMs) ?: enriched
     }
 
     fun pollSyncedTelemetry(nowRealtimeMs: Long = System.nanoTime() / 1_000_000L): VisualizerTelemetry {
