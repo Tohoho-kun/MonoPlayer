@@ -1,0 +1,9 @@
+# Copy this file to `config.toml` and point `linker` at your local Android NDK clang binaries.
+
+[target.aarch64-linux-android]
+linker = "<ANDROID_SDK>/ndk/<NDK_VERSION>/toolchains/llvm/prebuilt/<HOST_TAG>/bin/aarch64-linux-android26-clang"
+rustflags = ["-C", "link-arg=-Wl,-z,max-page-size=16384"]
+
+[target.x86_64-linux-android]
+linker = "<ANDROID_SDK>/ndk/<NDK_VERSION>/toolchains/llvm/prebuilt/<HOST_TAG>/bin/x86_64-linux-android26-clang"
+rustflags = ["-C", "link-arg=-Wl,-z,max-page-size=16384"]

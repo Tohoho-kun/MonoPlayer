@@ -1,0 +1,15 @@
+[package]
+name = "monoplayer_core"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "monoplayer_core"
+crate-type = ["cdylib", "rlib"]
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+panic = "unwind"
+strip = true
