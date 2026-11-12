@@ -369,12 +369,18 @@ fun LoudnessNormalizerCard(
                 }
 
                 if (config.autoSpeedEnabled) {
+                    val isHandheld = telemetry.speedSource == SpeedTrackingSource.HANDHELD
                     // Live Speed & Sensor Status Bar
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(6.dp))
-                            .background(Color(0xFF0F172A))
+                            .background(if (isHandheld) Color(0xFF450A0A).copy(alpha = 0.55f) else Color(0xFF0F172A))
+                            .border(
+                                width = if (isHandheld) 1.dp else 0.dp,
+                                color = if (isHandheld) Color(0xFFFF5252).copy(alpha = 0.65f) else Color.Transparent,
+                                shape = RoundedCornerShape(6.dp)
+                            )
                             .padding(horizontal = 8.dp, vertical = 6.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
@@ -382,8 +388,8 @@ fun LoudnessNormalizerCard(
                         Column {
                             Text("検知車速", color = Color(0xFF64748B), fontSize = 9.sp)
                             Text(
-                                text = "${"%.1f".format(telemetry.detectedSpeedKmh)} km/h",
-                                color = Color(0xFF00F5D4),
+                                text = if (isHandheld) "0.0 km/h" else "${"%.1f".format(telemetry.detectedSpeedKmh)} km/h",
+                                color = if (isHandheld) Color(0xFFFF8A80) else Color(0xFF00F5D4),
                                 fontSize = 12.sp,
                                 fontFamily = FontFamily.Monospace,
                                 fontWeight = FontWeight.Bold
@@ -398,21 +404,57 @@ fun LoudnessNormalizerCard(
                                     SpeedTrackingSource.GPS -> Color(0xFF38BDF8)
                                     SpeedTrackingSource.TUNNEL_IMU -> Color(0xFFFBBF24)
                                     SpeedTrackingSource.STOPPED -> Color(0xFF94A3B8)
+                                    SpeedTrackingSource.HANDHELD -> Color(0xFFFF5252)
                                     SpeedTrackingSource.OFF -> Color(0xFF64748B)
                                 },
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold
                             )
+                            if (!isHandheld && telemetry.speedSource != SpeedTrackingSource.OFF) {
+                                Text(
+                                    text = if (telemetry.carForwardCalibrated) "進行軸ロック" else "進行軸学習中",
+                                    color = if (telemetry.carForwardCalibrated) Color(0xFF10B981) else Color(0xFFFBBF24),
+                                    fontSize = 8.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
                         }
 
                         Column {
                             Text("連動補正 / 車速ゲイン", color = Color(0xFF64748B), fontSize = 9.sp)
+                            val effectiveIntensity = if (isHandheld) 0f else config.carCabinIntensity
                             Text(
-                                text = "${(config.carCabinIntensity * 100).toInt()}% (+${"%.1f".format(config.carCabinIntensity * 4.4f)} dB)",
-                                color = Color(0xFFD4AF37),
+                                text = "${(effectiveIntensity * 100).toInt()}% (+${"%.1f".format(effectiveIntensity * 4.4f)} dB)",
+                                color = if (isHandheld) Color(0xFF94A3B8) else Color(0xFFD4AF37),
                                 fontSize = 11.sp,
                                 fontFamily = FontFamily.Monospace,
                                 fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
+                    if (isHandheld) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(Color(0xFFFF5252).copy(alpha = 0.14f))
+                                .border(1.dp, Color(0xFFFF5252).copy(alpha = 0.45f), RoundedCornerShape(6.dp))
+                                .padding(horizontal = 8.dp, vertical = 5.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Warning,
+                                contentDescription = null,
+                                tint = Color(0xFFFF8A80),
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Text(
+                                text = "手持ち検出中 • GPS一時停止 (固定で自動再開)",
+                                color = Color(0xFFFFCDD2),
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.SemiBold
                             )
                         }
                     }

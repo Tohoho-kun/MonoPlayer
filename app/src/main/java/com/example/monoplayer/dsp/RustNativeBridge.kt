@@ -196,6 +196,22 @@ object RustNativeBridge {
     isGpsLost: Boolean,
     out2: FloatArray,
   ): Float
+  @JvmStatic external fun nativeVehicleTrackerOnImuSample(
+    handle: Long,
+    ax: Float,
+    ay: Float,
+    az: Float,
+    gx: Float,
+    gy: Float,
+    gz: Float,
+    wx: Float,
+    wy: Float,
+    wz: Float,
+    hasGyro: Boolean,
+    dtSec: Float,
+    isGpsLost: Boolean,
+    out5: FloatArray,
+  ): Float
   @JvmStatic external fun nativeVehicleTrackerCalcIntensity(
     speedKmh: Float,
     speedRefKmh: Float,
