@@ -7,6 +7,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,6 +31,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
@@ -55,6 +57,22 @@ private const val GRAPH_MAX_X_DB = 0f
 private const val GRAPH_MAX_Y_DB = 4f
 private const val LIMITER_THRESH_DB = -1.51f // MasteringPeakLimiter::THRESHOLD_LINEAR = 0.84
 private const val TRAIL_CAPACITY = 10
+
+private enum class IoGraphZoomRange(
+    val badgeLabel: String,
+    val minDb: Float,
+    val gridValues: List<Float>
+) {
+    ZOOM_18("拡大 -18dB", -18f, listOf(-18f, -12f, -6f, 0f)),
+    ZOOM_12("超拡大 -12dB", -12f, listOf(-12f, -9f, -6f, -3f, 0f)),
+    FULL_48("全体 -48dB", -48f, listOf(-48f, -36f, -24f, -12f, 0f));
+
+    fun next(): IoGraphZoomRange = when (this) {
+        ZOOM_18 -> ZOOM_12
+        ZOOM_12 -> FULL_48
+        FULL_48 -> ZOOM_18
+    }
+}
 
 /**
  * Dedicated In-Car Cockpit / HUD Stage for [com.example.monoplayer.dsp.LoudnessMode.NOISY_CAR].
@@ -574,6 +592,12 @@ private fun CarIoTransferGraph(
     val textMeasurer = rememberTextMeasurer()
     val netDeltaDb = smoothOutDb - smoothPreDb
     val isLimiting = smoothGrDb > 0.20f
+    var zoomRange by remember { mutableStateOf(IoGraphZoomRange.ZOOM_18) }
+    val viewMinDb by animateFloatAsState(
+        targetValue = zoomRange.minDb,
+        animationSpec = tween(durationMillis = 260),
+        label = "io_graph_zoom"
+    )
 
     Column(
         modifier = modifier
@@ -651,298 +675,333 @@ private fun CarIoTransferGraph(
             }
         }
 
-        // Main Interactive I/O Transfer Canvas
-        Canvas(
+        // Main Interactive I/O Transfer Canvas (Tap to cycle zoom: -18dB -> -12dB -> -48dB)
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
+                .clickable { zoomRange = zoomRange.next() }
         ) {
-            val padLeft = 28.dp.toPx()
-            val padRight = 8.dp.toPx()
-            val padTop = 8.dp.toPx()
-            val padBottom = 16.dp.toPx()
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val padLeft = 28.dp.toPx()
+                val padRight = 8.dp.toPx()
+                val padTop = 8.dp.toPx()
+                val padBottom = 16.dp.toPx()
 
-            val plotW = (size.width - padLeft - padRight).coerceAtLeast(40f)
-            val plotH = (size.height - padTop - padBottom).coerceAtLeast(40f)
+                val plotW = (size.width - padLeft - padRight).coerceAtLeast(40f)
+                val plotH = (size.height - padTop - padBottom).coerceAtLeast(40f)
 
-            fun xForDb(db: Float): Float {
-                val frac = ((db - GRAPH_MIN_DB) / (GRAPH_MAX_X_DB - GRAPH_MIN_DB)).coerceIn(0f, 1f)
-                return padLeft + frac * plotW
-            }
-
-            fun yForDb(db: Float): Float {
-                val frac = ((db - GRAPH_MIN_DB) / (GRAPH_MAX_Y_DB - GRAPH_MIN_DB)).coerceIn(0f, 1f)
-                return padTop + (1f - frac) * plotH
-            }
-
-            // Over-0dB Headroom Safety Band at top of graph
-            val yZeroDb = yForDb(0f)
-            drawRect(
-                color = coralFlash.copy(alpha = 0.08f),
-                topLeft = Offset(padLeft, padTop),
-                size = Size(plotW, (yZeroDb - padTop).coerceAtLeast(0f))
-            )
-
-            // Plot Frame
-            drawRoundRect(
-                color = Color(0xFF172033),
-                topLeft = Offset(padLeft, padTop),
-                size = Size(plotW, plotH),
-                cornerRadius = CornerRadius(6.dp.toPx(), 6.dp.toPx()),
-                style = Stroke(width = 1.dp.toPx())
-            )
-
-            val axisLabelStyle = TextStyle(
-                color = Color(0xFF64748B),
-                fontSize = 8.sp,
-                fontFamily = FontFamily.Monospace
-            )
-
-            // Gridlines (-48, -36, -24, -12, 0 dB)
-            val gridDbValues = listOf(-48f, -36f, -24f, -12f, 0f)
-            for (db in gridDbValues) {
-                val gx = xForDb(db)
-                val gy = yForDb(db)
-                val isZero = db == 0f
-                val gridColor = if (isZero) coralFlash.copy(alpha = 0.50f) else Color(0xFF162032)
-                val gridStroke = if (isZero) 1.2.dp.toPx() else 0.8.dp.toPx()
-                val dash = if (isZero) PathEffect.dashPathEffect(floatArrayOf(8f, 6f)) else null
-
-                if (db > GRAPH_MIN_DB && db < GRAPH_MAX_X_DB) {
-                    drawLine(
-                        color = gridColor,
-                        start = Offset(gx, padTop),
-                        end = Offset(gx, padTop + plotH),
-                        strokeWidth = gridStroke
-                    )
-                }
-                if (db > GRAPH_MIN_DB) {
-                    drawLine(
-                        color = gridColor,
-                        start = Offset(padLeft, gy),
-                        end = Offset(padLeft + plotW, gy),
-                        strokeWidth = gridStroke,
-                        pathEffect = dash
-                    )
+                fun xForDb(db: Float): Float {
+                    val frac = (db - viewMinDb) / (GRAPH_MAX_X_DB - viewMinDb)
+                    return padLeft + frac * plotW
                 }
 
-                // Y-axis tick text
-                val yLabel = if (isZero) "0dB" else "${db.toInt()}"
-                val yMeasured = textMeasurer.measure(
-                    text = yLabel,
-                    style = if (isZero) axisLabelStyle.copy(color = Color(0xFFFF8A80)) else axisLabelStyle
-                )
-                drawText(
-                    textLayoutResult = yMeasured,
-                    topLeft = Offset(
-                        (padLeft - yMeasured.size.width - 4.dp.toPx()).coerceAtLeast(0f),
-                        (gy - yMeasured.size.height / 2f).coerceIn(0f, size.height - yMeasured.size.height)
-                    )
+                fun yForDb(db: Float): Float {
+                    val frac = (db - viewMinDb) / (GRAPH_MAX_Y_DB - viewMinDb)
+                    return padTop + (1f - frac) * plotH
+                }
+
+                // Over-0dB Headroom Safety Band at top of graph
+                val yZeroDb = yForDb(0f)
+                drawRect(
+                    color = coralFlash.copy(alpha = 0.08f),
+                    topLeft = Offset(padLeft, padTop),
+                    size = Size(plotW, (yZeroDb - padTop).coerceAtLeast(0f))
                 )
 
-                // X-axis tick text
-                if (db == -36f || db == -24f || db == -12f || db == 0f) {
-                    val xLabel = if (isZero) "0dB" else "${db.toInt()}"
-                    val xMeasured = textMeasurer.measure(xLabel, style = axisLabelStyle)
+                // Plot Frame
+                drawRoundRect(
+                    color = Color(0xFF172033),
+                    topLeft = Offset(padLeft, padTop),
+                    size = Size(plotW, plotH),
+                    cornerRadius = CornerRadius(6.dp.toPx(), 6.dp.toPx()),
+                    style = Stroke(width = 1.dp.toPx())
+                )
+
+                val axisLabelStyle = TextStyle(
+                    color = Color(0xFF64748B),
+                    fontSize = 8.sp,
+                    fontFamily = FontFamily.Monospace
+                )
+
+                // Dynamic Gridlines & Axis Ticks for current zoom range
+                val gridDbValues = zoomRange.gridValues
+                for (db in gridDbValues) {
+                    if (db < viewMinDb - 0.5f || db > GRAPH_MAX_X_DB + 0.5f) continue
+                    val gx = xForDb(db)
+                    val gy = yForDb(db)
+                    val isZero = db == 0f
+                    val gridColor = if (isZero) coralFlash.copy(alpha = 0.50f) else Color(0xFF162032)
+                    val gridStroke = if (isZero) 1.2.dp.toPx() else 0.8.dp.toPx()
+                    val dash = if (isZero) PathEffect.dashPathEffect(floatArrayOf(8f, 6f)) else null
+
+                    if (gx > padLeft + 2f && gx < padLeft + plotW - 2f) {
+                        drawLine(
+                            color = gridColor,
+                            start = Offset(gx, padTop),
+                            end = Offset(gx, padTop + plotH),
+                            strokeWidth = gridStroke
+                        )
+                    }
+                    if (gy > padTop + 2f && gy < padTop + plotH - 2f) {
+                        drawLine(
+                            color = gridColor,
+                            start = Offset(padLeft, gy),
+                            end = Offset(padLeft + plotW, gy),
+                            strokeWidth = gridStroke,
+                            pathEffect = dash
+                        )
+                    }
+
+                    // Y-axis tick text
+                    val yLabel = if (isZero) "0dB" else "${db.toInt()}"
+                    val yMeasured = textMeasurer.measure(
+                        text = yLabel,
+                        style = if (isZero) axisLabelStyle.copy(color = Color(0xFFFF8A80)) else axisLabelStyle
+                    )
                     drawText(
-                        textLayoutResult = xMeasured,
+                        textLayoutResult = yMeasured,
                         topLeft = Offset(
-                            (gx - xMeasured.size.width / 2f).coerceIn(padLeft, size.width - xMeasured.size.width),
-                            padTop + plotH + 3.dp.toPx()
+                            (padLeft - yMeasured.size.width - 4.dp.toPx()).coerceAtLeast(0f),
+                            (gy - yMeasured.size.height / 2f).coerceIn(0f, size.height - yMeasured.size.height)
                         )
                     )
+
+                    // X-axis tick text
+                    if (db > viewMinDb + 1f || db == gridDbValues.first()) {
+                        val xLabel = if (isZero) "0dB" else "${db.toInt()}"
+                        val xMeasured = textMeasurer.measure(xLabel, style = axisLabelStyle)
+                        drawText(
+                            textLayoutResult = xMeasured,
+                            topLeft = Offset(
+                                (gx - xMeasured.size.width / 2f).coerceIn(padLeft, size.width - xMeasured.size.width),
+                                padTop + plotH + 3.dp.toPx()
+                            )
+                        )
+                    }
+                }
+
+                // Clip interior curves, guides, trails, and dots neatly to the plot frame
+                clipRect(
+                    left = padLeft,
+                    top = padTop,
+                    right = padLeft + plotW,
+                    bottom = padTop + plotH
+                ) {
+                    // Limiter Threshold horizontal guide (-1.5 dBFS = linear 0.84)
+                    val yLimit = yForDb(LIMITER_THRESH_DB)
+                    drawLine(
+                        color = amberGold.copy(alpha = 0.55f),
+                        start = Offset(padLeft, yLimit),
+                        end = Offset(padLeft + plotW, yLimit),
+                        strokeWidth = 1.dp.toPx(),
+                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f))
+                    )
+                    val limTag = textMeasurer.measure(
+                        text = "LIMIT -1.5dB",
+                        style = TextStyle(
+                            color = amberGold.copy(alpha = 0.85f),
+                            fontSize = 7.5.sp,
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                    drawText(
+                        textLayoutResult = limTag,
+                        topLeft = Offset(padLeft + 5.dp.toPx(), yLimit + 2.dp.toPx())
+                    )
+
+                    // 1:1 Unity Diagonal Reference (Original = Output)
+                    drawLine(
+                        color = Color(0xFF475569).copy(alpha = 0.75f),
+                        start = Offset(xForDb(viewMinDb), yForDb(viewMinDb)),
+                        end = Offset(xForDb(GRAPH_MAX_X_DB), yForDb(GRAPH_MAX_X_DB)),
+                        strokeWidth = 1.1.dp.toPx(),
+                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f, 6f))
+                    )
+
+                    // Build Active Boost + Mastering Limiter Transfer Curve Path + Fill
+                    val steps = 48
+                    val curvePath = Path()
+                    val fillPath = Path()
+                    fillPath.moveTo(xForDb(viewMinDb), yForDb(viewMinDb))
+
+                    for (i in 0..steps) {
+                        val xDb = viewMinDb + (i.toFloat() / steps) * (GRAPH_MAX_X_DB - viewMinDb)
+                        val yDb = transferCurveOutputDb(xDb, curveBoostDb)
+                        val px = xForDb(xDb)
+                        val py = yForDb(yDb)
+                        if (i == 0) {
+                            curvePath.moveTo(px, py)
+                        } else {
+                            curvePath.lineTo(px, py)
+                        }
+                        fillPath.lineTo(px, py)
+                    }
+                    // Close fill area back along 1:1 diagonal from right to left
+                    fillPath.lineTo(xForDb(GRAPH_MAX_X_DB), yForDb(GRAPH_MAX_X_DB))
+                    fillPath.lineTo(xForDb(viewMinDb), yForDb(viewMinDb))
+                    fillPath.close()
+
+                    drawPath(
+                        path = fillPath,
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                coralFlash.copy(alpha = 0.16f),
+                                amberGold.copy(alpha = 0.13f),
+                                cyanAccent.copy(alpha = 0.06f)
+                            ),
+                            startY = yZeroDb,
+                            endY = padTop + plotH
+                        )
+                    )
+                    drawPath(
+                        path = curvePath,
+                        brush = Brush.horizontalGradient(
+                            colors = listOf(cyanAccent.copy(alpha = 0.75f), amberGold, coralFlash),
+                            startX = padLeft,
+                            endX = padLeft + plotW
+                        ),
+                        style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
+                    )
+
+                    // Motion trail for bouncing output dot ("ぴょんぴょん跳ね動く" persistence)
+                    for (k in 0 until TRAIL_CAPACITY) {
+                        val ageIndex = (trailHead - k + TRAIL_CAPACITY) % TRAIL_CAPACITY
+                        val tPre = trailPreDb[ageIndex]
+                        val tOut = trailOutDb[ageIndex]
+                        if (tPre <= viewMinDb - 1.5f) continue
+                        val fade = (1f - k.toFloat() / TRAIL_CAPACITY).coerceIn(0f, 1f)
+                        drawCircle(
+                            color = amberGold.copy(alpha = 0.28f * fade * fade),
+                            radius = (1.8f + 2.4f * fade).dp.toPx(),
+                            center = Offset(
+                                xForDb(tPre).coerceIn(padLeft, padLeft + plotW),
+                                yForDb(tOut).coerceIn(padTop, padTop + plotH)
+                            )
+                        )
+                    }
+
+                    // Live Dual Bouncing Points & Effect Vector
+                    val curXDb = smoothPreDb.coerceIn(GRAPH_MIN_DB, GRAPH_MAX_X_DB)
+                    val curUnityYDb = curXDb
+                    val curOutYDb = smoothOutDb.coerceIn(GRAPH_MIN_DB, GRAPH_MAX_X_DB)
+                    val curPostYDb = smoothPostDb.coerceIn(GRAPH_MIN_DB, GRAPH_MAX_Y_DB - 0.15f)
+                    val dotAlpha = if (curXDb < viewMinDb - 0.5f) 0.45f else 1f
+
+                    val cx = xForDb(curXDb).coerceIn(padLeft, padLeft + plotW)
+                    val cyUnity = yForDb(curUnityYDb).coerceIn(padTop, padTop + plotH)
+                    val cyOut = yForDb(curOutYDb).coerceIn(padTop, padTop + plotH)
+                    val cyPost = yForDb(curPostYDb).coerceIn(padTop, padTop + plotH)
+
+                    // Vertical crosshair ticks to axes for clarity
+                    drawLine(
+                        color = cyanAccent.copy(alpha = 0.18f * dotAlpha),
+                        start = Offset(cx, max(cyUnity, cyOut)),
+                        end = Offset(cx, padTop + plotH),
+                        strokeWidth = 0.8.dp.toPx(),
+                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(4f, 4f))
+                    )
+
+                    // Boost Lift Vector (Original -> Final Output)
+                    if (abs(cyUnity - cyOut) > 2f) {
+                        val liftColor = if (curOutYDb >= curUnityYDb) amberGold else Color(0xFFF472B6)
+                        drawLine(
+                            color = liftColor.copy(alpha = 0.78f * dotAlpha),
+                            start = Offset(cx, cyUnity),
+                            end = Offset(cx, cyOut),
+                            strokeWidth = 2.dp.toPx(),
+                            cap = StrokeCap.Round
+                        )
+                    }
+
+                    // Limiter Compression Beam + Virtual Un-Limited Peak Ring (when Limiting GR > 0.2dB)
+                    if (smoothGrDb > 0.20f || curPostYDb > curOutYDb + 0.35f) {
+                        drawLine(
+                            color = coralFlash.copy(alpha = 0.85f * dotAlpha),
+                            start = Offset(cx, cyPost),
+                            end = Offset(cx, cyOut),
+                            strokeWidth = 2.4.dp.toPx(),
+                            cap = StrokeCap.Round
+                        )
+                        // Virtual peak ring showing where audio would have clipped without Limiter
+                        drawCircle(
+                            color = coralFlash.copy(alpha = 0.80f * dotAlpha),
+                            radius = 5.5.dp.toPx(),
+                            center = Offset(cx, cyPost),
+                            style = Stroke(width = 1.6.dp.toPx())
+                        )
+                    }
+
+                    // Dot 1: Original Input Level (Cyan dot on 1:1 line)
+                    drawCircle(
+                        color = cyanAccent.copy(alpha = 0.22f * dotAlpha),
+                        radius = 9.5.dp.toPx(),
+                        center = Offset(cx, cyUnity)
+                    )
+                    drawCircle(
+                        color = cyanAccent.copy(alpha = dotAlpha),
+                        radius = 5.dp.toPx(),
+                        center = Offset(cx, cyUnity)
+                    )
+                    drawCircle(
+                        color = Color.White.copy(alpha = dotAlpha),
+                        radius = 2.dp.toPx(),
+                        center = Offset(cx, cyUnity)
+                    )
+
+                    // Dot 2: Boosted & Limited Output Level (Amber Gold -> Coral orb)
+                    val outOrbColor = if (isLimiting) {
+                        lerp(amberGold, coralFlash, (smoothGrDb / 6f).coerceIn(0f, 1f))
+                    } else {
+                        amberGold
+                    }
+                    drawCircle(
+                        color = outOrbColor.copy(alpha = 0.26f * dotAlpha),
+                        radius = 12.dp.toPx(),
+                        center = Offset(cx, cyOut)
+                    )
+                    drawCircle(
+                        color = outOrbColor.copy(alpha = dotAlpha),
+                        radius = 6.5.dp.toPx(),
+                        center = Offset(cx, cyOut)
+                    )
+                    drawCircle(
+                        color = Color.White.copy(alpha = dotAlpha),
+                        radius = 2.4.dp.toPx(),
+                        center = Offset(cx, cyOut)
+                    )
+
+                    // Subtle 1:1 diagonal & I/O orientation caption inside top-left margin
+                    val ioHint = textMeasurer.measure(
+                        text = "Y:出力 / X:原音",
+                        style = TextStyle(color = Color(0xFF475569), fontSize = 7.5.sp, fontFamily = FontFamily.Monospace)
+                    )
+                    drawText(
+                        textLayoutResult = ioHint,
+                        topLeft = Offset(padLeft + 5.dp.toPx(), padTop + 3.dp.toPx())
+                    )
                 }
             }
 
-            // Limiter Threshold horizontal guide (-1.5 dBFS = linear 0.84)
-            val yLimit = yForDb(LIMITER_THRESH_DB)
-            drawLine(
-                color = amberGold.copy(alpha = 0.55f),
-                start = Offset(padLeft, yLimit),
-                end = Offset(padLeft + plotW, yLimit),
-                strokeWidth = 1.dp.toPx(),
-                pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f))
-            )
-            val limTag = textMeasurer.measure(
-                text = "LIMIT -1.5dB",
-                style = TextStyle(
-                    color = amberGold.copy(alpha = 0.85f),
-                    fontSize = 7.5.sp,
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.Bold
-                )
-            )
-            drawText(
-                textLayoutResult = limTag,
-                topLeft = Offset(padLeft + 5.dp.toPx(), yLimit + 2.dp.toPx())
-            )
-
-            // 1:1 Unity Diagonal Reference (Original = Output)
-            drawLine(
-                color = Color(0xFF475569).copy(alpha = 0.75f),
-                start = Offset(xForDb(GRAPH_MIN_DB), yForDb(GRAPH_MIN_DB)),
-                end = Offset(xForDb(GRAPH_MAX_X_DB), yForDb(GRAPH_MAX_X_DB)),
-                strokeWidth = 1.1.dp.toPx(),
-                pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f, 6f))
-            )
-
-            // Build Active Boost + Mastering Limiter Transfer Curve Path + Fill
-            val steps = 48
-            val curvePath = Path()
-            val fillPath = Path()
-            fillPath.moveTo(xForDb(GRAPH_MIN_DB), yForDb(GRAPH_MIN_DB))
-
-            for (i in 0..steps) {
-                val xDb = GRAPH_MIN_DB + (i.toFloat() / steps) * (GRAPH_MAX_X_DB - GRAPH_MIN_DB)
-                val yDb = transferCurveOutputDb(xDb, curveBoostDb)
-                val px = xForDb(xDb)
-                val py = yForDb(yDb)
-                if (i == 0) {
-                    curvePath.moveTo(px, py)
-                } else {
-                    curvePath.lineTo(px, py)
-                }
-                fillPath.lineTo(px, py)
-            }
-            // Close fill area back along 1:1 diagonal from right to left
-            fillPath.lineTo(xForDb(GRAPH_MAX_X_DB), yForDb(GRAPH_MAX_X_DB))
-            fillPath.lineTo(xForDb(GRAPH_MIN_DB), yForDb(GRAPH_MIN_DB))
-            fillPath.close()
-
-            drawPath(
-                path = fillPath,
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        coralFlash.copy(alpha = 0.16f),
-                        amberGold.copy(alpha = 0.13f),
-                        cyanAccent.copy(alpha = 0.06f)
-                    ),
-                    startY = yZeroDb,
-                    endY = padTop + plotH
-                )
-            )
-            drawPath(
-                path = curvePath,
-                brush = Brush.horizontalGradient(
-                    colors = listOf(cyanAccent.copy(alpha = 0.75f), amberGold, coralFlash),
-                    startX = padLeft,
-                    endX = padLeft + plotW
-                ),
-                style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
-            )
-
-            // Motion trail for bouncing output dot ("ぴょんぴょん跳ね動く" persistence)
-            for (k in 0 until TRAIL_CAPACITY) {
-                val ageIndex = (trailHead - k + TRAIL_CAPACITY) % TRAIL_CAPACITY
-                val tPre = trailPreDb[ageIndex]
-                val tOut = trailOutDb[ageIndex]
-                if (tPre <= GRAPH_MIN_DB + 1.5f) continue
-                val fade = (1f - k.toFloat() / TRAIL_CAPACITY).coerceIn(0f, 1f)
-                drawCircle(
-                    color = amberGold.copy(alpha = 0.28f * fade * fade),
-                    radius = (1.8f + 2.4f * fade).dp.toPx(),
-                    center = Offset(xForDb(tPre), yForDb(tOut))
+            // Bottom-right Zoom Range Pill (Tap graph to cycle: 拡大 -18dB -> 超拡大 -12dB -> 全体 -48dB)
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 13.dp, bottom = 21.dp)
+                    .clip(RoundedCornerShape(5.dp))
+                    .background(Color(0xFF0F172A).copy(alpha = 0.88f))
+                    .border(0.8.dp, Color(0xFF334155), RoundedCornerShape(5.dp))
+                    .padding(horizontal = 6.dp, vertical = 2.dp)
+            ) {
+                Text(
+                    text = "${zoomRange.badgeLabel} ↻",
+                    color = Color(0xFFCBD5E1),
+                    fontSize = 8.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    fontFamily = FontFamily.Monospace
                 )
             }
-
-            // Live Dual Bouncing Points & Effect Vector
-            val curXDb = smoothPreDb.coerceIn(GRAPH_MIN_DB, GRAPH_MAX_X_DB)
-            val curUnityYDb = curXDb
-            val curOutYDb = smoothOutDb.coerceIn(GRAPH_MIN_DB, GRAPH_MAX_X_DB)
-            val curPostYDb = smoothPostDb.coerceIn(GRAPH_MIN_DB, GRAPH_MAX_Y_DB - 0.15f)
-
-            val cx = xForDb(curXDb)
-            val cyUnity = yForDb(curUnityYDb)
-            val cyOut = yForDb(curOutYDb)
-            val cyPost = yForDb(curPostYDb)
-
-            // Vertical crosshair ticks to axes for clarity
-            drawLine(
-                color = cyanAccent.copy(alpha = 0.18f),
-                start = Offset(cx, max(cyUnity, cyOut)),
-                end = Offset(cx, padTop + plotH),
-                strokeWidth = 0.8.dp.toPx(),
-                pathEffect = PathEffect.dashPathEffect(floatArrayOf(4f, 4f))
-            )
-
-            // Boost Lift Vector (Original -> Final Output)
-            if (abs(cyUnity - cyOut) > 2f) {
-                val liftColor = if (curOutYDb >= curUnityYDb) amberGold else Color(0xFFF472B6)
-                drawLine(
-                    color = liftColor.copy(alpha = 0.78f),
-                    start = Offset(cx, cyUnity),
-                    end = Offset(cx, cyOut),
-                    strokeWidth = 2.dp.toPx(),
-                    cap = StrokeCap.Round
-                )
-            }
-
-            // Limiter Compression Beam + Virtual Un-Limited Peak Ring (when Limiting GR > 0.2dB)
-            if (smoothGrDb > 0.20f || curPostYDb > curOutYDb + 0.35f) {
-                drawLine(
-                    color = coralFlash.copy(alpha = 0.85f),
-                    start = Offset(cx, cyPost),
-                    end = Offset(cx, cyOut),
-                    strokeWidth = 2.4.dp.toPx(),
-                    cap = StrokeCap.Round
-                )
-                // Virtual peak ring showing where audio would have clipped without Limiter
-                drawCircle(
-                    color = coralFlash.copy(alpha = 0.80f),
-                    radius = 5.5.dp.toPx(),
-                    center = Offset(cx, cyPost),
-                    style = Stroke(width = 1.6.dp.toPx())
-                )
-            }
-
-            // Dot 1: Original Input Level (Cyan dot on 1:1 line)
-            drawCircle(
-                color = cyanAccent.copy(alpha = 0.22f),
-                radius = 9.5.dp.toPx(),
-                center = Offset(cx, cyUnity)
-            )
-            drawCircle(
-                color = cyanAccent,
-                radius = 5.dp.toPx(),
-                center = Offset(cx, cyUnity)
-            )
-            drawCircle(
-                color = Color.White,
-                radius = 2.dp.toPx(),
-                center = Offset(cx, cyUnity)
-            )
-
-            // Dot 2: Boosted & Limited Output Level (Amber Gold -> Coral orb)
-            val outOrbColor = if (isLimiting) {
-                lerp(amberGold, coralFlash, (smoothGrDb / 6f).coerceIn(0f, 1f))
-            } else {
-                amberGold
-            }
-            drawCircle(
-                color = outOrbColor.copy(alpha = 0.26f),
-                radius = 12.dp.toPx(),
-                center = Offset(cx, cyOut)
-            )
-            drawCircle(
-                color = outOrbColor,
-                radius = 6.5.dp.toPx(),
-                center = Offset(cx, cyOut)
-            )
-            drawCircle(
-                color = Color.White,
-                radius = 2.4.dp.toPx(),
-                center = Offset(cx, cyOut)
-            )
-
-            // Subtle 1:1 diagonal & I/O orientation caption inside top-left margin
-            val ioHint = textMeasurer.measure(
-                text = "Y:出力 / X:原音",
-                style = TextStyle(color = Color(0xFF475569), fontSize = 7.5.sp, fontFamily = FontFamily.Monospace)
-            )
-            drawText(
-                textLayoutResult = ioHint,
-                topLeft = Offset(padLeft + 5.dp.toPx(), padTop + 3.dp.toPx())
-            )
         }
     }
 }
