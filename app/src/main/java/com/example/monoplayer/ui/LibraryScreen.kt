@@ -33,6 +33,7 @@ fun LibraryScreen(
     val artistGroups by viewModel.artistGroups.collectAsState()
     val folderGroups by viewModel.folderGroups.collectAsState()
     val safFolders by viewModel.safFolderUris.collectAsState()
+    val excludedFolders by viewModel.excludedFolders.collectAsState()
     val isScanning by viewModel.isScanning.collectAsState()
     val currentTrack by viewModel.currentTrack.collectAsState()
 
@@ -287,7 +288,7 @@ fun LibraryScreen(
                                 .padding(10.dp)
                         ) {
                             Text(
-                                text = "💡 アーティスト表記揺れ自動吸収エンジン稼働中：全角/半角・大文字/小文字・「, The」の語順・feat.表記などを自動的に正規化して同一アーティストへ統合しています。手動での名寄せ統合も可能です。",
+                                text = "アーティスト表記揺れ自動吸収エンジン稼働中：全角/半角・大文字/小文字・ハイフン/波線・「, The」の語順・feat.表記などを自動的に正規化して同一アーティストへ統合しています。手動での統合も可能です。",
                                 color = Color(0xFFCBD5E1),
                                 fontSize = 11.sp,
                                 lineHeight = 15.sp
@@ -390,8 +391,36 @@ fun LibraryScreen(
                         }
                     }
 
-                    groupedByFolder.forEach { (folderPath, tracksInFolder) ->
+                    groupedByFolder.filterKeys { it !in excludedFolders }.forEach { (folderPath, tracksInFolder) ->
                         item(key = "folder_$folderPath") {
+                            val dismissState = rememberSwipeToDismissBoxState(
+                                confirmValueChange = { value ->
+                                    if (value == SwipeToDismissBoxValue.EndToStart) {
+                                        viewModel.excludeFolder(folderPath)
+                                        true
+                                    } else false
+                                }
+                            )
+                            SwipeToDismissBox(
+                                state = dismissState,
+                                enableDismissFromStartToEnd = false,
+                                backgroundContent = {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .background(Color(0xFF991B1B))
+                                            .padding(horizontal = 20.dp),
+                                        contentAlignment = Alignment.CenterEnd
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = "フォルダを除外",
+                                            tint = Color.White
+                                        )
+                                    }
+                                }
+                            ) {
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -408,7 +437,7 @@ fun LibraryScreen(
                                 ) {
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(
-                                            text = "📁 ${folderPath.substringAfterLast('/')}",
+                                            text = folderPath.substringAfterLast('/'),
                                             color = Color.White,
                                             fontSize = 14.sp,
                                             fontWeight = FontWeight.Bold
@@ -437,9 +466,7 @@ fun LibraryScreen(
                                             ),
                                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
                                         ) {
-                                            Icon(Icons.Default.Shuffle, contentDescription = "フォルダシャッフル", modifier = Modifier.size(15.dp))
-                                            Spacer(modifier = Modifier.width(4.dp))
-                                            Text("シャッフル", fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                                            Icon(Icons.Default.Shuffle, contentDescription = "フォルダシャッフル", modifier = Modifier.size(16.dp))
                                         }
                                         FilledTonalButton(
                                             onClick = {
@@ -456,12 +483,11 @@ fun LibraryScreen(
                                             ),
                                             contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
                                         ) {
-                                            Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
-                                            Spacer(modifier = Modifier.width(4.dp))
-                                            Text("フォルダ再生", fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                                            Icon(Icons.Default.PlayArrow, contentDescription = "フォルダ再生", modifier = Modifier.size(16.dp))
                                         }
                                     }
                                 }
+                            }
                             }
                         }
                     }

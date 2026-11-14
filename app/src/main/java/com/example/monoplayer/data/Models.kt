@@ -76,7 +76,7 @@ enum class PlaybackScopeType(val label: String) {
 enum class LibrarySubTab(val title: String) {
     SONGS("曲一覧"),
     ALBUMS("アルバム"),
-    ARTISTS("アーティスト(名寄せ)"),
+    ARTISTS("アーティスト"),
     PLAYLISTS("プレイリスト"),
     FOLDERS("フォルダ探索")
 }
