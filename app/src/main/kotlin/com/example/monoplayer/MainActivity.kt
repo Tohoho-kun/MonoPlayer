@@ -50,7 +50,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MonoPlayerTheme(darkTheme = true, dynamicColor = false) {
+            AcousticPebbleTheme {
                 MonoPlayerAppRoot()
             }
         }
@@ -116,12 +116,12 @@ fun MonoPlayerAppRoot(
     }
 
     Scaffold(
-        containerColor = Color(0xFF040408),
+        containerColor = AcousticPebbleColors.Surface,
         topBar = {
             // Hide app name and header completely on the Player screen
             if (currentTab != MainNavTab.PLAYER) {
                 Surface(
-                    color = Color(0xFF080A14),
+                    color = AcousticPebbleColors.SurfaceContainerLowest,
                     tonalElevation = 2.dp
                 ) {
                     Row(
