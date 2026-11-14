@@ -19,7 +19,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -44,8 +43,8 @@ fun DynamicEqRackCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .background(Color(0xFF0F172A))
-            .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(14.dp))
+            .background(AcousticPebbleColors.SurfaceContainerLow)
+            .border(1.dp, AcousticPebbleColors.SurfaceContainerHigh, RoundedCornerShape(14.dp))
             .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
@@ -58,20 +57,23 @@ fun DynamicEqRackCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = "3バンド・ダイナミックEQ (LOW / MID / HIGH)",
-                    color = Color.White,
+                    color = AcousticPebbleColors.OnSurface,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = "プリセット: ${config.presetName}  (TPT SVF ゼロ位相歪み動的制御)",
-                    color = Color(0xFF94A3B8),
+                    color = AcousticPebbleColors.OnSurfaceVariant,
                     fontSize = 11.sp
                 )
             }
             Switch(
                 checked = config.enabled,
                 onCheckedChange = { onConfigChange(config.copy(enabled = it)) },
-                colors = SwitchDefaults.colors(checkedThumbColor = Color(0xFFD4AF37))
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = AcousticPebbleColors.Primary,
+                    checkedTrackColor = AcousticPebbleColors.PrimaryContainer.copy(alpha = 0.45f)
+                )
             )
         }
 
@@ -89,8 +91,8 @@ fun DynamicEqRackCard(
                     onClick = { onPresetSelect(presetName) },
                     label = { Text(presetName, fontSize = 11.sp) },
                     colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = Color(0xFFD4AF37).copy(alpha = 0.22f),
-                        selectedLabelColor = Color(0xFFD4AF37)
+                        selectedContainerColor = AcousticPebbleColors.SurfaceContainerHigh,
+                        selectedLabelColor = AcousticPebbleColors.PrimaryContainer
                     )
                 )
             }
@@ -102,8 +104,8 @@ fun DynamicEqRackCard(
                 .fillMaxWidth()
                 .height(115.dp)
                 .clip(RoundedCornerShape(10.dp))
-                .background(Color(0xFF020617))
-                .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(10.dp))
+                .background(AcousticPebbleColors.SurfaceContainerLowest)
+                .border(1.dp, AcousticPebbleColors.SurfaceContainerHigh, RoundedCornerShape(10.dp))
                 .padding(8.dp)
         ) {
             Canvas(modifier = Modifier.fillMaxSize()) {
@@ -112,9 +114,9 @@ fun DynamicEqRackCard(
                 val midY = h * 0.5f
 
                 // 0 dB center grid line & +-6 dB lines
-                drawLine(Color(0xFF334155), Offset(0f, midY), Offset(w, midY), strokeWidth = 1.2f)
-                drawLine(Color(0xFF1E293B), Offset(0f, h * 0.25f), Offset(w, h * 0.25f), strokeWidth = 1f)
-                drawLine(Color(0xFF1E293B), Offset(0f, h * 0.75f), Offset(w, h * 0.75f), strokeWidth = 1f)
+                drawLine(AcousticPebbleColors.OutlineVariant, Offset(0f, midY), Offset(w, midY), strokeWidth = 1.2f)
+                drawLine(AcousticPebbleColors.SurfaceContainerHigh, Offset(0f, h * 0.25f), Offset(w, h * 0.25f), strokeWidth = 1f)
+                drawLine(AcousticPebbleColors.SurfaceContainerHigh, Offset(0f, h * 0.75f), Offset(w, h * 0.75f), strokeWidth = 1f)
 
                 val points = 64
                 val staticPath = Path()
@@ -150,21 +152,21 @@ fun DynamicEqRackCard(
                     path = fillPath,
                     brush = Brush.verticalGradient(
                         colors = listOf(
-                            Color(0xFF00F5D4).copy(alpha = 0.22f),
-                            Color(0xFFD4AF37).copy(alpha = 0.05f),
-                            Color(0xFFFF2A85).copy(alpha = 0.22f)
+                            AcousticPebbleColors.PrimaryContainer.copy(alpha = 0.22f),
+                            AcousticPebbleColors.TertiaryContainer.copy(alpha = 0.08f),
+                            AcousticPebbleColors.Secondary.copy(alpha = 0.22f)
                         )
                     )
                 )
                 drawPath(
                     path = staticPath,
-                    color = Color(0xFF64748B).copy(alpha = 0.65f),
+                    color = AcousticPebbleColors.OnSurfaceVariant.copy(alpha = 0.65f),
                     style = Stroke(width = 1.5f, cap = StrokeCap.Round)
                 )
                 drawPath(
                     path = dynamicPath,
                     brush = Brush.horizontalGradient(
-                        colors = listOf(Color(0xFFFF2A85), Color(0xFFD4AF37), Color(0xFF00F5D4))
+                        colors = listOf(AcousticPebbleColors.Secondary, AcousticPebbleColors.TertiaryContainer, AcousticPebbleColors.PrimaryContainer)
                     ),
                     style = Stroke(width = 3.0f, cap = StrokeCap.Round)
                 )
@@ -172,9 +174,10 @@ fun DynamicEqRackCard(
 
             Text(
                 text = "20Hz ──────── LIVE DYNAMIC CURVE (±14dB) ──────── 20kHz",
-                color = Color(0xFF64748B),
+                color = AcousticPebbleColors.OnSurfaceVariant,
                 fontSize = 8.sp,
-                fontFamily = FontFamily.Monospace,
+                fontFamily = PlusJakartaSansFamily,
+                letterSpacing = 0.5.sp,
                 modifier = Modifier.align(Alignment.BottomCenter)
             )
         }
@@ -189,34 +192,36 @@ fun DynamicEqRackCard(
                 val bandCfg = config.band(bandType)
                 val deltaDb = telemetry.dynEqGainDeltaDb.getOrElse(idx) { 0f }
                 val accent = when (bandType) {
-                    DynamicBandType.LOW -> Color(0xFFFF2A85)
-                    DynamicBandType.MID -> Color(0xFFD4AF37)
-                    DynamicBandType.HIGH -> Color(0xFF00F5D4)
+                    DynamicBandType.LOW -> AcousticPebbleColors.Secondary
+                    DynamicBandType.MID -> AcousticPebbleColors.TertiaryContainer
+                    DynamicBandType.HIGH -> AcousticPebbleColors.PrimaryContainer
                 }
 
                 Column(
                     modifier = Modifier
                         .weight(1f)
                         .clip(RoundedCornerShape(10.dp))
-                        .background(if (isSelected) accent.copy(alpha = 0.18f) else Color(0xFF020617))
-                        .border(1.2.dp, if (isSelected) accent else Color(0xFF1E293B), RoundedCornerShape(10.dp))
+                        .background(if (isSelected) accent.copy(alpha = 0.18f) else AcousticPebbleColors.SurfaceContainerLowest)
+                        .border(1.2.dp, if (isSelected) accent else AcousticPebbleColors.SurfaceContainerHigh, RoundedCornerShape(10.dp))
                         .clickable { selectedBand = bandType }
                         .padding(vertical = 7.dp, horizontal = 6.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
                         text = "${bandType.label} (${bandCfg.freqHz.toInt()}Hz)",
-                        color = if (isSelected) accent else Color.White,
+                        color = if (isSelected) accent else AcousticPebbleColors.OnSurface,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace
+                        fontFamily = PlusJakartaSansFamily,
+                        letterSpacing = 0.5.sp
                     )
                     Text(
                         text = "Δ ${"%+.1f".format(deltaDb)} dB",
-                        color = if (bandCfg.enabled && config.enabled) accent else Color(0xFF64748B),
+                        color = if (bandCfg.enabled && config.enabled) accent else AcousticPebbleColors.OnSurfaceVariant,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace
+                        fontFamily = PlusJakartaSansFamily,
+                        letterSpacing = 0.5.sp
                     )
                 }
             }
@@ -225,9 +230,9 @@ fun DynamicEqRackCard(
         // Selected Band Controls
         val activeBandCfg: DynamicBandConfig = config.band(selectedBand)
         val bandAccent = when (selectedBand) {
-            DynamicBandType.LOW -> Color(0xFFFF2A85)
-            DynamicBandType.MID -> Color(0xFFD4AF37)
-            DynamicBandType.HIGH -> Color(0xFF00F5D4)
+            DynamicBandType.LOW -> AcousticPebbleColors.Secondary
+            DynamicBandType.MID -> AcousticPebbleColors.TertiaryContainer
+            DynamicBandType.HIGH -> AcousticPebbleColors.PrimaryContainer
         }
         val detectedDb = telemetry.dynEqDetectedDb.getOrElse(selectedBand.ordinal) { -60f }
 
@@ -235,8 +240,8 @@ fun DynamicEqRackCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(10.dp))
-                .background(Color(0xFF020617))
-                .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(10.dp))
+                .background(AcousticPebbleColors.SurfaceContainerLowest)
+                .border(1.dp, AcousticPebbleColors.SurfaceContainerHigh, RoundedCornerShape(10.dp))
                 .padding(10.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
@@ -250,7 +255,8 @@ fun DynamicEqRackCard(
                     color = bandAccent,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily.Monospace
+                    fontFamily = PlusJakartaSansFamily,
+                    letterSpacing = 0.5.sp
                 )
                 Checkbox(
                     checked = activeBandCfg.enabled,
@@ -323,14 +329,25 @@ private fun DynEqSliderRow(
     onChange: (Float) -> Unit
 ) {
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(label, color = Color(0xFFCBD5E1), fontSize = 11.sp)
-        Text(valueText, color = accent, fontSize = 11.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
+        Text(label, color = AcousticPebbleColors.OnSurface, fontSize = 11.sp)
+        Text(
+            valueText,
+            color = accent,
+            fontSize = 11.sp,
+            fontFamily = PlusJakartaSansFamily,
+            letterSpacing = 0.5.sp,
+            fontWeight = FontWeight.Bold
+        )
     }
     Slider(
         value = value,
         onValueChange = onChange,
         valueRange = range,
-        colors = SliderDefaults.colors(thumbColor = accent, activeTrackColor = accent, inactiveTrackColor = Color(0xFF1E293B)),
+        colors = SliderDefaults.colors(
+            thumbColor = accent,
+            activeTrackColor = accent,
+            inactiveTrackColor = AcousticPebbleColors.SurfaceContainerHigh
+        ),
         modifier = Modifier.height(24.dp)
     )
 }

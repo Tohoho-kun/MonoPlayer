@@ -25,7 +25,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -134,7 +133,7 @@ fun MonoPlayerAppRoot(
                     ) {
                         Text(
                             text = currentTab.label,
-                            color = Color(0xFFF4F1EA),
+                            color = AcousticPebbleColors.OnSurface,
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -146,9 +145,10 @@ fun MonoPlayerAppRoot(
                         }
                         Text(
                             text = "${activeAlgo.badge}$stageSuffix",
-                            color = Color(0xFFC8A24A),
+                            color = AcousticPebbleColors.PrimaryContainer,
                             fontSize = 10.sp,
-                            fontFamily = FontFamily.Monospace,
+                            fontFamily = PlusJakartaSansFamily,
+                            letterSpacing = 0.5.sp,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -157,8 +157,8 @@ fun MonoPlayerAppRoot(
         },
         bottomBar = {
             NavigationBar(
-                containerColor = Color(0xFF06060D),
-                contentColor = Color.White
+                containerColor = AcousticPebbleColors.SurfaceContainerLowest,
+                contentColor = AcousticPebbleColors.OnSurface
             ) {
                 MainNavTab.entries.forEach { tab ->
                     val selected = currentTab == tab
@@ -179,11 +179,11 @@ fun MonoPlayerAppRoot(
                             )
                         },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = Color(0xFFC8A24A),
-                            selectedTextColor = Color(0xFFC8A24A),
-                            indicatorColor = Color(0xFF1A1634),
-                            unselectedIconColor = Color(0xFF5D6782),
-                            unselectedTextColor = Color(0xFF5D6782)
+                            selectedIconColor = AcousticPebbleColors.PrimaryContainer,
+                            selectedTextColor = AcousticPebbleColors.PrimaryContainer,
+                            indicatorColor = AcousticPebbleColors.SurfaceContainerHigh,
+                            unselectedIconColor = AcousticPebbleColors.OnSurfaceVariant.copy(alpha = 0.6f),
+                            unselectedTextColor = AcousticPebbleColors.OnSurfaceVariant.copy(alpha = 0.6f)
                         )
                     )
                 }
@@ -228,13 +228,17 @@ fun MonoPlayerAppRoot(
                     .padding(12.dp)
             ) {
                 Surface(
-                    color = Color(0xFF0284C7),
+                    color = AcousticPebbleColors.SurfaceContainerHigh,
                     shape = RoundedCornerShape(10.dp),
-                    shadowElevation = 6.dp
+                    shadowElevation = 6.dp,
+                    border = androidx.compose.foundation.BorderStroke(
+                        1.dp,
+                        AcousticPebbleColors.PrimaryContainer.copy(alpha = 0.4f)
+                    )
                 ) {
                     Text(
                         text = statusBanner ?: "",
-                        color = Color.White,
+                        color = AcousticPebbleColors.Primary,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)

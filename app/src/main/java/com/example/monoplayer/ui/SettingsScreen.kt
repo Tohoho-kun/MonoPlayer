@@ -24,7 +24,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -54,14 +53,14 @@ fun SettingsScreen(
     var activeHelpItem by remember { mutableStateOf<SettingHelpItem?>(null) }
     var showLicensesDialog by remember { mutableStateOf(false) }
 
-    val gold = Color(0xFFC8A24A)
-    val cardBg = Color(0xFF0C1022)
-    val cardBorder = Color(0xFF1F2A4A)
+    val gold = AcousticPebbleColors.PrimaryContainer
+    val cardBg = AcousticPebbleColors.SurfaceContainerLow
+    val cardBorder = AcousticPebbleColors.SurfaceContainerHigh
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF05060D))
+            .background(AcousticPebbleColors.Surface)
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -83,7 +82,7 @@ fun SettingsScreen(
             ) {
                 Text(
                     text = "再生画面メインステージ表示",
-                    color = Color.White,
+                    color = AcousticPebbleColors.OnSurface,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -143,7 +142,7 @@ fun SettingsScreen(
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                     Text(
                         text = "ビジュアライザー・デザイン",
-                        color = Color.White,
+                        color = AcousticPebbleColors.OnSurface,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -191,7 +190,7 @@ fun SettingsScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFF141A32))
+                    .background(AcousticPebbleColors.SurfaceContainerHigh)
                     .border(1.dp, gold.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
                     .padding(horizontal = 12.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -200,7 +199,7 @@ fun SettingsScreen(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = visualizerStyle.label,
-                        color = Color.White,
+                        color = AcousticPebbleColors.OnSurface,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -208,7 +207,8 @@ fun SettingsScreen(
                         text = visualizerStyle.eraTag,
                         color = gold,
                         fontSize = 10.sp,
-                        fontFamily = FontFamily.Monospace
+                        fontFamily = PlusJakartaSansFamily,
+                        letterSpacing = 0.5.sp
                     )
                 }
                 Icon(
@@ -235,7 +235,7 @@ fun SettingsScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(if (selected) Color(0xFF1A1533) else Color(0xFF070913))
+                                .background(if (selected) AcousticPebbleColors.SurfaceContainerHigh else AcousticPebbleColors.SurfaceContainerLowest)
                                 .border(1.dp, if (selected) gold else cardBorder, RoundedCornerShape(8.dp))
                                 .clickable {
                                     viewModel.setVisualizerStyle(candidate)
@@ -248,7 +248,7 @@ fun SettingsScreen(
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = candidate.label,
-                                    color = if (selected) gold else Color.White,
+                                    color = if (selected) gold else AcousticPebbleColors.OnSurface,
                                     fontSize = 11.sp,
                                     fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
                                 )
@@ -256,7 +256,8 @@ fun SettingsScreen(
                                     text = candidate.eraTag,
                                     color = AcousticPebbleColors.OnSurfaceVariant,
                                     fontSize = 9.sp,
-                                    fontFamily = FontFamily.Monospace
+                                    fontFamily = PlusJakartaSansFamily,
+                                    letterSpacing = 0.5.sp
                                 )
                             }
                             if (selected) {
@@ -290,7 +291,7 @@ fun SettingsScreen(
             ) {
                 Text(
                     text = "オーディオ同期 ＆ クロスフェード",
-                    color = Color.White,
+                    color = AcousticPebbleColors.OnSurface,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -317,7 +318,7 @@ fun SettingsScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFF070913))
+                    .background(AcousticPebbleColors.SurfaceContainerLowest)
                     .border(1.dp, cardBorder, RoundedCornerShape(8.dp))
                     .padding(10.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
@@ -340,7 +341,8 @@ fun SettingsScreen(
                             text = "自動補正: ${autoLeadMs} ms • 現在値: ${"%+d".format(syncOffsetMs)} ms (合計 ${totalDelayMs} ms)",
                             color = gold,
                             fontSize = 10.sp,
-                            fontFamily = FontFamily.Monospace
+                            fontFamily = PlusJakartaSansFamily,
+                            letterSpacing = 0.5.sp
                         )
                     }
                     IconButton(
@@ -377,7 +379,7 @@ fun SettingsScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFF070913))
+                    .background(AcousticPebbleColors.SurfaceContainerLowest)
                     .border(1.dp, cardBorder, RoundedCornerShape(8.dp))
                     .padding(10.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
@@ -400,7 +402,8 @@ fun SettingsScreen(
                             text = if (crossfadeSec <= 0.1f) "設定: OFF" else "設定: ${"%.1f".format(crossfadeSec)} 秒",
                             color = gold,
                             fontSize = 10.sp,
-                            fontFamily = FontFamily.Monospace
+                            fontFamily = PlusJakartaSansFamily,
+                            letterSpacing = 0.5.sp
                         )
                     }
                     IconButton(
@@ -465,7 +468,7 @@ fun SettingsScreen(
             ) {
                 Text(
                     text = "再生画面の表示項目",
-                    color = Color.White,
+                    color = AcousticPebbleColors.OnSurface,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -530,7 +533,8 @@ fun SettingsScreen(
                 "v$appVersion",
                 color = AcousticPebbleColors.OnSurfaceVariant,
                 fontSize = 13.sp,
-                fontFamily = FontFamily.Monospace
+                fontFamily = PlusJakartaSansFamily,
+                letterSpacing = 0.5.sp
             )
         }
 
@@ -549,7 +553,7 @@ fun SettingsScreen(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = "オープンソースライセンス / 使用ライブラリ",
-                    color = Color.White,
+                    color = AcousticPebbleColors.OnSurface,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -577,7 +581,7 @@ fun SettingsScreen(
                     text = item.title,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = AcousticPebbleColors.OnSurface
                 )
             },
             text = {
@@ -593,7 +597,7 @@ fun SettingsScreen(
                     Text("閉じる", color = gold, fontWeight = FontWeight.Bold)
                 }
             },
-            containerColor = Color(0xFF14192F),
+            containerColor = AcousticPebbleColors.SurfaceContainerHigh,
             shape = RoundedCornerShape(14.dp)
         )
     }
@@ -606,7 +610,7 @@ fun SettingsScreen(
                     text = "オープンソースライセンス・権利表記",
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = AcousticPebbleColors.OnSurface
                 )
             },
             text = {
@@ -645,7 +649,8 @@ fun SettingsScreen(
                     Text(
                         text = "Apache License 2.0 全文: https://www.apache.org/licenses/LICENSE-2.0",
                         fontSize = 10.sp,
-                        fontFamily = FontFamily.Monospace,
+                        fontFamily = PlusJakartaSansFamily,
+                        letterSpacing = 0.5.sp,
                         color = AcousticPebbleColors.OnSurfaceVariant
                     )
                 }
@@ -655,7 +660,7 @@ fun SettingsScreen(
                     Text("閉じる", color = gold, fontWeight = FontWeight.Bold)
                 }
             },
-            containerColor = Color(0xFF14192F),
+            containerColor = AcousticPebbleColors.SurfaceContainerHigh,
             shape = RoundedCornerShape(14.dp)
         )
     }
@@ -667,12 +672,12 @@ private fun LicenseNoticeBlock(name: String, detail: String) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
-            .background(Color(0xFF0A0E1E))
-            .border(1.dp, Color(0xFF1F2A4A), RoundedCornerShape(8.dp))
+            .background(AcousticPebbleColors.SurfaceContainerLowest)
+            .border(1.dp, AcousticPebbleColors.SurfaceContainerHigh, RoundedCornerShape(8.dp))
             .padding(8.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
-        Text(text = name, color = Color(0xFFC8A24A), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+        Text(text = name, color = AcousticPebbleColors.PrimaryContainer, fontSize = 11.sp, fontWeight = FontWeight.Bold)
         Text(text = detail, color = AcousticPebbleColors.OnSurface, fontSize = 10.sp, lineHeight = 14.sp)
     }
 }
@@ -694,13 +699,13 @@ private fun StageChoiceButton(
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(10.dp))
-            .background(if (selected) Color(0xFF1A1533) else Color(0xFF070913))
-            .border(1.4.dp, if (selected) accent else Color(0xFF1F2A4A), RoundedCornerShape(10.dp))
+            .background(if (selected) AcousticPebbleColors.SurfaceContainerHigh else AcousticPebbleColors.SurfaceContainerLowest)
+            .border(1.4.dp, if (selected) accent else AcousticPebbleColors.OutlineVariant, RoundedCornerShape(10.dp))
             .clickable { onClick() }
             .padding(10.dp),
         verticalArrangement = Arrangement.spacedBy(3.dp)
     ) {
-        Text(title, color = if (selected) accent else Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        Text(title, color = if (selected) accent else AcousticPebbleColors.OnSurface, fontSize = 12.sp, fontWeight = FontWeight.Bold)
         Text(subtitle, color = AcousticPebbleColors.OnSurfaceVariant, fontSize = 10.sp)
     }
 }
@@ -716,7 +721,10 @@ private fun SettingSwitchRow(label: String, checked: Boolean, onToggle: (Boolean
         Switch(
             checked = checked,
             onCheckedChange = onToggle,
-            colors = SwitchDefaults.colors(checkedThumbColor = Color(0xFFC8A24A))
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = AcousticPebbleColors.Primary,
+                checkedTrackColor = AcousticPebbleColors.PrimaryContainer.copy(alpha = 0.45f)
+            )
         )
     }
 }
@@ -751,7 +759,10 @@ private fun SettingSwitchRowWithHelp(
         Switch(
             checked = checked,
             onCheckedChange = onToggle,
-            colors = SwitchDefaults.colors(checkedThumbColor = Color(0xFFC8A24A))
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = AcousticPebbleColors.Primary,
+                checkedTrackColor = AcousticPebbleColors.PrimaryContainer.copy(alpha = 0.45f)
+            )
         )
     }
 }

@@ -1,16 +1,22 @@
 package com.example.monoplayer.ui
 
+import android.content.Context
+import android.graphics.Typeface
+import android.os.Build
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.AndroidFont
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontLoadingStrategy
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.googlefonts.Font
-import androidx.compose.ui.text.googlefonts.GoogleFont
 import androidx.compose.ui.unit.sp
+import androidx.core.content.res.ResourcesCompat
 import com.example.monoplayer.R
 
 /**
@@ -100,27 +106,79 @@ private val AcousticPebbleColorScheme = darkColorScheme(
     surfaceContainerHighest = AcousticPebbleColors.SurfaceContainerHighest,
 )
 
-private val GoogleFontsProvider = GoogleFont.Provider(
-    providerAuthority = "com.google.android.gms.fonts",
-    providerPackage = "com.google.android.gms",
-    certificates = R.array.com_google_android_gms_fonts_certs
-)
+private object CompositeBundledFontLoader : AndroidFont.TypefaceLoader {
+    override fun loadBlocking(context: Context, font: AndroidFont): Typeface? {
+        if (font !is CompositeBundledFont) return null
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val primaryFont = android.graphics.fonts.Font.Builder(context.resources, font.primaryResId).build()
+            val fallbackFont = android.graphics.fonts.Font.Builder(context.resources, font.fallbackResId).build()
+            val primaryFamily = android.graphics.fonts.FontFamily.Builder(primaryFont).build()
+            val fallbackFamily = android.graphics.fonts.FontFamily.Builder(fallbackFont).build()
+            return Typeface.CustomFallbackBuilder(primaryFamily)
+                .addCustomFallback(fallbackFamily)
+                .build()
+        }
+        return ResourcesCompat.getFont(context, font.primaryResId)
+    }
 
-private val PlusJakartaSansFont = GoogleFont("Plus Jakarta Sans")
-private val NotoSansJpFont = GoogleFont("Noto Sans JP")
+    override suspend fun awaitLoad(context: Context, font: AndroidFont): Typeface? {
+        return loadBlocking(context, font)
+    }
+}
+
+private class CompositeBundledFont(
+    val primaryResId: Int,
+    val fallbackResId: Int,
+    override val weight: FontWeight,
+    override val style: FontStyle = FontStyle.Normal
+) : AndroidFont(FontLoadingStrategy.Blocking, CompositeBundledFontLoader, FontVariation.Settings()) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is CompositeBundledFont) return false
+        return primaryResId == other.primaryResId &&
+            fallbackResId == other.fallbackResId &&
+            weight == other.weight &&
+            style == other.style
+    }
+
+    override fun hashCode(): Int {
+        var result = primaryResId
+        result = 31 * result + fallbackResId
+        result = 31 * result + weight.hashCode()
+        result = 31 * result + style.hashCode()
+        return result
+    }
+}
 
 val PlusJakartaSansFamily = FontFamily(
-    Font(googleFont = PlusJakartaSansFont, fontProvider = GoogleFontsProvider, weight = FontWeight.Normal),
-    Font(googleFont = PlusJakartaSansFont, fontProvider = GoogleFontsProvider, weight = FontWeight.Medium),
-    Font(googleFont = PlusJakartaSansFont, fontProvider = GoogleFontsProvider, weight = FontWeight.SemiBold),
-    Font(googleFont = PlusJakartaSansFont, fontProvider = GoogleFontsProvider, weight = FontWeight.Bold),
-    Font(googleFont = NotoSansJpFont, fontProvider = GoogleFontsProvider, weight = FontWeight.Normal),
-    Font(googleFont = NotoSansJpFont, fontProvider = GoogleFontsProvider, weight = FontWeight.Medium),
-    Font(googleFont = NotoSansJpFont, fontProvider = GoogleFontsProvider, weight = FontWeight.SemiBold),
-    Font(googleFont = NotoSansJpFont, fontProvider = GoogleFontsProvider, weight = FontWeight.Bold),
+    CompositeBundledFont(R.font.plus_jakarta_sans_regular, R.font.noto_sans_jp_regular, FontWeight.Normal),
+    CompositeBundledFont(R.font.plus_jakarta_sans_medium, R.font.noto_sans_jp_medium, FontWeight.Medium),
+    CompositeBundledFont(R.font.plus_jakarta_sans_semibold, R.font.noto_sans_jp_medium, FontWeight.SemiBold),
+    CompositeBundledFont(R.font.plus_jakarta_sans_bold, R.font.noto_sans_jp_bold, FontWeight.Bold),
 )
 
 private val AcousticPebbleTypography = Typography(
+    displayLarge = TextStyle(
+        fontFamily = PlusJakartaSansFamily,
+        fontWeight = FontWeight.Medium,
+        fontSize = 57.sp,
+        lineHeight = 64.sp,
+        letterSpacing = (-0.25).sp,
+    ),
+    displayMedium = TextStyle(
+        fontFamily = PlusJakartaSansFamily,
+        fontWeight = FontWeight.Medium,
+        fontSize = 45.sp,
+        lineHeight = 52.sp,
+        letterSpacing = 0.sp,
+    ),
+    displaySmall = TextStyle(
+        fontFamily = PlusJakartaSansFamily,
+        fontWeight = FontWeight.Medium,
+        fontSize = 36.sp,
+        lineHeight = 44.sp,
+        letterSpacing = 0.sp,
+    ),
     headlineLarge = TextStyle(
         fontFamily = PlusJakartaSansFamily,
         fontWeight = FontWeight.Medium,
@@ -135,6 +193,34 @@ private val AcousticPebbleTypography = Typography(
         lineHeight = 30.sp,
         letterSpacing = (-0.22).sp,
     ),
+    headlineSmall = TextStyle(
+        fontFamily = PlusJakartaSansFamily,
+        fontWeight = FontWeight.Medium,
+        fontSize = 18.sp,
+        lineHeight = 24.sp,
+        letterSpacing = 0.sp,
+    ),
+    titleLarge = TextStyle(
+        fontFamily = PlusJakartaSansFamily,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 20.sp,
+        lineHeight = 26.sp,
+        letterSpacing = 0.sp,
+    ),
+    titleMedium = TextStyle(
+        fontFamily = PlusJakartaSansFamily,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 16.sp,
+        lineHeight = 22.sp,
+        letterSpacing = 0.1.sp,
+    ),
+    titleSmall = TextStyle(
+        fontFamily = PlusJakartaSansFamily,
+        fontWeight = FontWeight.Medium,
+        fontSize = 14.sp,
+        lineHeight = 20.sp,
+        letterSpacing = 0.1.sp,
+    ),
     bodyLarge = TextStyle(
         fontFamily = PlusJakartaSansFamily,
         fontWeight = FontWeight.Normal,
@@ -148,6 +234,20 @@ private val AcousticPebbleTypography = Typography(
         fontSize = 14.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.sp,
+    ),
+    bodySmall = TextStyle(
+        fontFamily = PlusJakartaSansFamily,
+        fontWeight = FontWeight.Normal,
+        fontSize = 12.sp,
+        lineHeight = 16.sp,
+        letterSpacing = 0.2.sp,
+    ),
+    labelLarge = TextStyle(
+        fontFamily = PlusJakartaSansFamily,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 14.sp,
+        lineHeight = 20.sp,
+        letterSpacing = 0.1.sp,
     ),
     labelMedium = TextStyle(
         fontFamily = PlusJakartaSansFamily,

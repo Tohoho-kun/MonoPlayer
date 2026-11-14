@@ -39,8 +39,8 @@ fun PlaylistsSection(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFF0A0D18))
-                    .border(1.dp, Color(0xFFC8A24A).copy(alpha = 0.28f), RoundedCornerShape(12.dp))
+                    .background(AcousticPebbleColors.SurfaceContainerLow)
+                    .border(1.dp, AcousticPebbleColors.OutlineVariant.copy(alpha = 0.45f), RoundedCornerShape(12.dp))
                     .padding(horizontal = 14.dp, vertical = 12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
@@ -48,7 +48,7 @@ fun PlaylistsSection(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "マイ・プレイリスト (${playlists.size}件)",
-                        color = Color(0xFFF4F1EA),
+                        color = AcousticPebbleColors.OnSurface,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -62,8 +62,8 @@ fun PlaylistsSection(
                 Button(
                     onClick = { showCreatePlaylistDialog = true },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFC8A24A),
-                        contentColor = AcousticPebbleColors.Surface
+                        containerColor = AcousticPebbleColors.PrimaryContainer,
+                        contentColor = AcousticPebbleColors.OnPrimary
                     )
                 ) {
                     Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
@@ -122,6 +122,9 @@ fun PlaylistsSection(
 
         AlertDialog(
             onDismissRequest = { showCreatePlaylistDialog = false },
+            containerColor = AcousticPebbleColors.SurfaceContainerHigh,
+            titleContentColor = AcousticPebbleColors.OnSurface,
+            textContentColor = AcousticPebbleColors.OnSurface,
             title = { Text("新規プレイリスト作成", fontWeight = FontWeight.Bold) },
             text = {
                 Column(
@@ -185,14 +188,18 @@ fun PlaylistsSection(
                     onClick = {
                         viewModel.createPlaylist(name, desc, selectedTrackIds.toList())
                         showCreatePlaylistDialog = false
-                    }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = AcousticPebbleColors.PrimaryContainer,
+                        contentColor = AcousticPebbleColors.OnPrimary
+                    )
                 ) {
                     Text("作成")
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showCreatePlaylistDialog = false }) {
-                    Text("キャンセル")
+                    Text("キャンセル", color = AcousticPebbleColors.OnSurfaceVariant)
                 }
             }
         )
@@ -216,8 +223,8 @@ private fun PlaylistCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFF0A0D18))
-            .border(1.dp, Color(0xFF1D243C), RoundedCornerShape(12.dp))
+            .background(AcousticPebbleColors.SurfaceContainerLow)
+            .border(1.dp, AcousticPebbleColors.SurfaceContainerHigh, RoundedCornerShape(12.dp))
             .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -231,7 +238,7 @@ private fun PlaylistCard(
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(
                     text = playlist.name,
-                    color = Color(0xFFF4F1EA),
+                    color = AcousticPebbleColors.OnSurface,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -244,7 +251,7 @@ private fun PlaylistCard(
                 }
                 Text(
                     text = "${tracks.size} 曲",
-                    color = Color(0xFFC8A24A),
+                    color = AcousticPebbleColors.PrimaryContainer,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -252,18 +259,21 @@ private fun PlaylistCard(
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = onShufflePlaylist) {
-                    Icon(Icons.Default.Shuffle, contentDescription = "シャッフル", tint = Color(0xFFC8A24A))
+                    Icon(Icons.Default.Shuffle, contentDescription = "シャッフル", tint = AcousticPebbleColors.PrimaryContainer)
                 }
                 FilledTonalButton(
                     onClick = { onPlayPlaylist(null) },
-                    enabled = tracks.isNotEmpty()
+                    enabled = tracks.isNotEmpty(),
+                    colors = ButtonDefaults.filledTonalButtonColors(
+                        containerColor = AcousticPebbleColors.PrimaryContainer,
+                        contentColor = AcousticPebbleColors.OnPrimary
+                    ),
+                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
                 ) {
-                    Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("再生", fontSize = 11.sp)
+                    Icon(Icons.Default.PlayArrow, contentDescription = "再生", modifier = Modifier.size(16.dp))
                 }
                 IconButton(onClick = onDeletePlaylist) {
-                    Icon(Icons.Default.DeleteOutline, contentDescription = "削除", tint = Color(0xFF64748B))
+                    Icon(Icons.Default.DeleteOutline, contentDescription = "削除", tint = AcousticPebbleColors.OnSurfaceVariant)
                 }
             }
         }
@@ -273,7 +283,7 @@ private fun PlaylistCard(
             if (tracks.isEmpty()) {
                 Text(
                     text = "曲がありません。ライブラリまたはキューの「＋」ボタンから追加してください。",
-                    color = Color(0xFF64748B),
+                    color = AcousticPebbleColors.OnSurfaceVariant,
                     fontSize = 12.sp,
                     modifier = Modifier.padding(vertical = 6.dp)
                 )
@@ -293,7 +303,7 @@ private fun PlaylistCard(
                                     Icon(
                                         imageVector = Icons.Default.QueuePlayNext,
                                         contentDescription = "次に再生",
-                                        tint = Color(0xFFC8A24A),
+                                        tint = AcousticPebbleColors.PrimaryContainer,
                                         modifier = Modifier.size(16.dp)
                                     )
                                 }

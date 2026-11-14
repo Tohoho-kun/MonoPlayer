@@ -14,7 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -101,8 +100,8 @@ fun LibraryScreen(
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = AcousticPebbleColors.PrimaryContainer,
                     unfocusedBorderColor = AcousticPebbleColors.OutlineVariant,
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White
+                    focusedTextColor = AcousticPebbleColors.OnSurface,
+                    unfocusedTextColor = AcousticPebbleColors.OnSurface
                 )
             )
 
@@ -348,7 +347,10 @@ fun LibraryScreen(
                     item {
                         Button(
                             onClick = onRequestAddFolder,
-                            colors = ButtonDefaults.buttonColors(containerColor = AcousticPebbleColors.PrimaryContainer),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = AcousticPebbleColors.PrimaryContainer,
+                                contentColor = AcousticPebbleColors.OnPrimary
+                            ),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Icon(Icons.Default.CreateNewFolder, contentDescription = null)
@@ -409,14 +411,14 @@ fun LibraryScreen(
                                         modifier = Modifier
                                             .fillMaxSize()
                                             .clip(RoundedCornerShape(12.dp))
-                                            .background(Color(0xFF991B1B))
+                                            .background(AcousticPebbleColors.ErrorContainer)
                                             .padding(horizontal = 20.dp),
                                         contentAlignment = Alignment.CenterEnd
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.Delete,
                                             contentDescription = "フォルダを除外",
-                                            tint = Color.White
+                                            tint = AcousticPebbleColors.OnErrorContainer
                                         )
                                     }
                                 }
@@ -438,7 +440,7 @@ fun LibraryScreen(
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(
                                             text = folderPath.substringAfterLast('/'),
-                                            color = Color.White,
+                                            color = AcousticPebbleColors.OnSurface,
                                             fontSize = 14.sp,
                                             fontWeight = FontWeight.Bold
                                         )
@@ -479,7 +481,7 @@ fun LibraryScreen(
                                             },
                                             colors = ButtonDefaults.filledTonalButtonColors(
                                                 containerColor = AcousticPebbleColors.PrimaryContainer,
-                                                contentColor = Color.White
+                                                contentColor = AcousticPebbleColors.OnPrimary
                                             ),
                                             contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
                                         ) {
@@ -518,7 +520,7 @@ fun LibraryScreen(
                     Text(
                         text = "※別のアーティスト名と同じ名前を入力すると、1つのアーティストとして統合再生できるようになります。",
                         fontSize = 11.sp,
-                        color = Color(0xFF64748B)
+                        color = AcousticPebbleColors.OnSurfaceVariant
                     )
                 }
             },
@@ -570,7 +572,7 @@ fun TrackRowCard(
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(
                 text = track.title,
-                color = if (isCurrent) AcousticPebbleColors.PrimaryContainer else Color.White,
+                color = if (isCurrent) AcousticPebbleColors.PrimaryContainer else AcousticPebbleColors.OnSurface,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
@@ -593,9 +595,10 @@ fun TrackRowCard(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = formatDurationMs(track.durationMs),
-                color = Color(0xFF64748B),
+                color = AcousticPebbleColors.OnSurfaceVariant,
                 fontSize = 11.sp,
-                fontFamily = FontFamily.Monospace,
+                fontFamily = PlusJakartaSansFamily,
+                letterSpacing = 0.5.sp,
                 modifier = Modifier.padding(end = 4.dp)
             )
             onEnqueueNext?.let { enqueue ->
@@ -603,7 +606,7 @@ fun TrackRowCard(
                     Icon(
                         imageVector = Icons.Default.QueuePlayNext,
                         contentDescription = "次に再生（キュー追加）",
-                        tint = Color(0xFFC8A24A),
+                        tint = AcousticPebbleColors.PrimaryContainer,
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -652,8 +655,8 @@ private fun AlbumGroupCard(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "💿 ${album.albumName}",
-                    color = Color.White,
+                    text = album.albumName,
+                    color = AcousticPebbleColors.OnSurface,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -674,20 +677,16 @@ private fun AlbumGroupCard(
                     contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
                 ) {
                     Icon(Icons.Default.Shuffle, contentDescription = "アルバムシャッフル", modifier = Modifier.size(15.dp))
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("シャッフル", fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                 }
                 FilledTonalButton(
                     onClick = { onPlayAlbum(null) },
                     colors = ButtonDefaults.filledTonalButtonColors(
                         containerColor = AcousticPebbleColors.PrimaryContainer,
-                        contentColor = Color.White
+                        contentColor = AcousticPebbleColors.OnPrimary
                     ),
                     contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
                 ) {
-                    Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("再生", fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                    Icon(Icons.Default.PlayArrow, contentDescription = "アルバム再生", modifier = Modifier.size(16.dp))
                 }
             }
         }
@@ -740,8 +739,8 @@ private fun ArtistGroupCard(
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(
-                        text = "🎤 ${artist.canonicalName}",
-                        color = Color.White,
+                        text = artist.canonicalName,
+                        color = AcousticPebbleColors.OnSurface,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -749,12 +748,12 @@ private fun ArtistGroupCard(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(4.dp))
-                                .background(Color(0xFF34D399).copy(alpha = 0.2f))
+                                .background(AcousticPebbleColors.PrimaryContainer.copy(alpha = 0.2f))
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
                             Text(
                                 text = "表記揺れ${artist.rawVariations.size}種を統合済",
-                                color = Color(0xFF34D399),
+                                color = AcousticPebbleColors.PrimaryContainer,
                                 fontSize = 9.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -786,20 +785,16 @@ private fun ArtistGroupCard(
                     contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
                 ) {
                     Icon(Icons.Default.Shuffle, contentDescription = "アーティスト全曲シャッフル", modifier = Modifier.size(15.dp))
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("シャッフル", fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                 }
                 FilledTonalButton(
                     onClick = { onPlayArtist(null) },
                     colors = ButtonDefaults.filledTonalButtonColors(
                         containerColor = AcousticPebbleColors.PrimaryContainer,
-                        contentColor = Color.White
+                        contentColor = AcousticPebbleColors.OnPrimary
                     ),
                     contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
                 ) {
-                    Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("再生", fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                    Icon(Icons.Default.PlayArrow, contentDescription = "アーティスト再生", modifier = Modifier.size(16.dp))
                 }
             }
         }

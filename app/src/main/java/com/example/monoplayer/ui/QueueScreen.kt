@@ -18,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -68,10 +67,10 @@ fun QueueScreen(
                 .clip(RoundedCornerShape(14.dp))
                 .background(
                     Brush.linearGradient(
-                        listOf(Color(0xFF141028), Color(0xFF090D1C))
+                        listOf(AcousticPebbleColors.SurfaceContainer, AcousticPebbleColors.SurfaceContainerLow)
                     )
                 )
-                .border(1.dp, Color(0xFFC8A24A).copy(alpha = 0.35f), RoundedCornerShape(14.dp))
+                .border(1.dp, AcousticPebbleColors.OutlineVariant.copy(alpha = 0.45f), RoundedCornerShape(14.dp))
                 .padding(horizontal = 14.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -83,14 +82,15 @@ fun QueueScreen(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = scopeType.label,
-                        color = Color(0xFFC8A24A),
+                        color = AcousticPebbleColors.PrimaryContainer,
                         fontSize = 10.sp,
-                        fontFamily = FontFamily.Monospace,
+                        fontFamily = PlusJakartaSansFamily,
+                        letterSpacing = 0.5.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = scopeTitle,
-                        color = Color(0xFFF4F1EA),
+                        color = AcousticPebbleColors.OnSurface,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
@@ -107,8 +107,8 @@ fun QueueScreen(
                 FilledTonalButton(
                     onClick = onOpenPlayerTab,
                     colors = ButtonDefaults.filledTonalButtonColors(
-                        containerColor = Color(0xFF1D1836),
-                        contentColor = Color(0xFFC8A24A)
+                        containerColor = AcousticPebbleColors.SurfaceContainerHigh,
+                        contentColor = AcousticPebbleColors.PrimaryContainer
                     ),
                     contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
                 ) {
@@ -131,9 +131,9 @@ fun QueueScreen(
                         Icon(Icons.Default.Shuffle, contentDescription = null, modifier = Modifier.size(14.dp))
                     },
                     colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = Color(0xFF281B4A),
-                        selectedLabelColor = Color(0xFFC8A24A),
-                        selectedLeadingIconColor = Color(0xFFC8A24A)
+                        selectedContainerColor = AcousticPebbleColors.SurfaceContainerHigh,
+                        selectedLabelColor = AcousticPebbleColors.PrimaryContainer,
+                        selectedLeadingIconColor = AcousticPebbleColors.PrimaryContainer
                     )
                 )
 
@@ -149,9 +149,9 @@ fun QueueScreen(
                         )
                     },
                     colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = Color(0xFF281B4A),
-                        selectedLabelColor = Color(0xFFC8A24A),
-                        selectedLeadingIconColor = Color(0xFFC8A24A)
+                        selectedContainerColor = AcousticPebbleColors.SurfaceContainerHigh,
+                        selectedLabelColor = AcousticPebbleColors.PrimaryContainer,
+                        selectedLeadingIconColor = AcousticPebbleColors.PrimaryContainer
                     )
                 )
 
@@ -170,7 +170,7 @@ fun QueueScreen(
                     Icon(
                         imageVector = Icons.Default.MyLocation,
                         contentDescription = "再生中の曲へスクロール",
-                        tint = Color(0xFFC8A24A),
+                        tint = AcousticPebbleColors.PrimaryContainer,
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -183,7 +183,7 @@ fun QueueScreen(
                     Icon(
                         imageVector = Icons.Default.Save,
                         contentDescription = "キューをプレイリストとして保存",
-                        tint = Color(0xFFC8A24A),
+                        tint = AcousticPebbleColors.PrimaryContainer,
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -199,7 +199,7 @@ fun QueueScreen(
             ) {
                 Text(
                     text = "再生キューが空です。ライブラリから曲を選択してください。",
-                    color = Color(0xFF64748B),
+                    color = AcousticPebbleColors.OnSurfaceVariant,
                     fontSize = 13.sp
                 )
             }
@@ -222,9 +222,10 @@ fun QueueScreen(
                         if (isNextUp) {
                             Text(
                                 text = "NEXT UP — 次に再生",
-                                color = Color(0xFFC8A24A).copy(alpha = 0.8f),
+                                color = AcousticPebbleColors.PrimaryContainer.copy(alpha = 0.85f),
                                 fontSize = 10.sp,
-                                fontFamily = FontFamily.Monospace,
+                                fontFamily = PlusJakartaSansFamily,
+                                letterSpacing = 0.5.sp,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.padding(start = 6.dp, top = 4.dp)
                             )
@@ -237,17 +238,17 @@ fun QueueScreen(
                                 .background(
                                     if (isCurrent) {
                                         Brush.horizontalGradient(
-                                            listOf(Color(0xFF22163E), Color(0xFF0E1B3A))
+                                            listOf(AcousticPebbleColors.SurfaceContainerHigh, AcousticPebbleColors.SurfaceContainer)
                                         )
                                     } else {
                                         Brush.horizontalGradient(
-                                            listOf(Color(0xFF0A0D18), Color(0xFF0A0D18))
+                                            listOf(AcousticPebbleColors.SurfaceContainerLow, AcousticPebbleColors.SurfaceContainerLow)
                                         )
                                     }
                                 )
                                 .border(
                                     width = if (isCurrent) 1.2.dp else 1.dp,
-                                    color = if (isCurrent) Color(0xFFC8A24A) else Color(0xFF1A2238),
+                                    color = if (isCurrent) AcousticPebbleColors.PrimaryContainer else AcousticPebbleColors.SurfaceContainerHigh,
                                     shape = RoundedCornerShape(10.dp)
                                 )
                                 .clickable { viewModel.skipToQueueIndex(index) }
@@ -264,15 +265,16 @@ fun QueueScreen(
                                     Icon(
                                         imageVector = if (isPlaying) Icons.Default.GraphicEq else Icons.Default.Pause,
                                         contentDescription = "再生中",
-                                        tint = Color(0xFFC8A24A),
+                                        tint = AcousticPebbleColors.PrimaryContainer,
                                         modifier = Modifier.size(18.dp)
                                     )
                                 } else {
                                     Text(
                                         text = "%02d".format(index + 1),
-                                        color = if (index < activeQueueIndex) Color(0xFF475569) else AcousticPebbleColors.OnSurfaceVariant,
+                                        color = if (index < activeQueueIndex) AcousticPebbleColors.OnSurfaceVariant.copy(alpha = 0.5f) else AcousticPebbleColors.OnSurfaceVariant,
                                         fontSize = 11.sp,
-                                        fontFamily = FontFamily.Monospace
+                                        fontFamily = PlusJakartaSansFamily,
+                                        letterSpacing = 0.5.sp
                                     )
                                 }
                             }
@@ -285,7 +287,7 @@ fun QueueScreen(
                             ) {
                                 Text(
                                     text = track.title,
-                                    color = if (isCurrent) Color(0xFFF6E7C1) else Color(0xFFF4F1EA),
+                                    color = if (isCurrent) AcousticPebbleColors.Primary else AcousticPebbleColors.OnSurface,
                                     fontSize = 13.sp,
                                     fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Medium,
                                     maxLines = 1,
@@ -293,7 +295,7 @@ fun QueueScreen(
                                 )
                                 Text(
                                     text = "${track.canonicalArtistName} • ${track.album} (${formatDurationMs(track.durationMs)})",
-                                    color = if (isCurrent) Color(0xFFC8A24A).copy(alpha = 0.85f) else Color(0xFF8A94A8),
+                                    color = if (isCurrent) AcousticPebbleColors.PrimaryContainer.copy(alpha = 0.85f) else AcousticPebbleColors.OnSurfaceVariant,
                                     fontSize = 11.sp,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
@@ -333,7 +335,7 @@ fun QueueScreen(
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.PlaylistAdd,
                                         contentDescription = "プレイリスト登録",
-                                        tint = Color(0xFFC8A24A),
+                                        tint = AcousticPebbleColors.PrimaryContainer,
                                         modifier = Modifier.size(17.dp)
                                     )
                                 }
@@ -361,6 +363,9 @@ fun QueueScreen(
         var playlistName by remember { mutableStateOf("Queue: $scopeTitle") }
         AlertDialog(
             onDismissRequest = { showSaveDialog = false },
+            containerColor = AcousticPebbleColors.SurfaceContainerHigh,
+            titleContentColor = AcousticPebbleColors.OnSurface,
+            textContentColor = AcousticPebbleColors.OnSurface,
             title = { Text("現在の再生キューを保存", fontWeight = FontWeight.Bold) },
             text = {
                 OutlinedTextField(
@@ -378,14 +383,18 @@ fun QueueScreen(
                             viewModel.saveActiveQueueAsPlaylist(playlistName.trim())
                             showSaveDialog = false
                         }
-                    }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = AcousticPebbleColors.PrimaryContainer,
+                        contentColor = AcousticPebbleColors.OnPrimary
+                    )
                 ) {
                     Text("保存")
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showSaveDialog = false }) {
-                    Text("キャンセル")
+                    Text("キャンセル", color = AcousticPebbleColors.OnSurfaceVariant)
                 }
             }
         )

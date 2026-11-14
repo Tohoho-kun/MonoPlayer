@@ -18,7 +18,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -33,16 +32,16 @@ fun SpatialDepthStageCard(
     onUpdateConfig: (SpatialStageConfig) -> Unit,
     onSelectPreset: (String) -> Unit
 ) {
-    val gold = Color(0xFFC8A24A)
-    val cyan = Color(0xFF38BDF8)
-    val violet = Color(0xFFA78BFA)
+    val gold = AcousticPebbleColors.PrimaryContainer
+    val cyan = AcousticPebbleColors.Primary
+    val violet = AcousticPebbleColors.Secondary
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .background(Color(0xFF0B1020))
-            .border(1.dp, Color(0xFFC8A24A).copy(alpha = 0.35f), RoundedCornerShape(14.dp))
+            .background(AcousticPebbleColors.SurfaceContainerLow)
+            .border(1.dp, AcousticPebbleColors.PrimaryContainer.copy(alpha = 0.35f), RoundedCornerShape(14.dp))
             .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
@@ -54,13 +53,13 @@ fun SpatialDepthStageCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = "ステレオ情報活用・前後奥行き空間 ＆ ナローステレオ",
-                    color = Color(0xFFF4F1EA),
+                    color = AcousticPebbleColors.OnSurface,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = "Midを手前に保ちつつSide成分をZ軸後方へ配置。完全モノラル／ナローステレオ対応",
-                    color = Color(0xFF94A3B8),
+                    color = AcousticPebbleColors.OnSurfaceVariant,
                     fontSize = 11.sp
                 )
             }
@@ -80,7 +79,7 @@ fun SpatialDepthStageCard(
                     onClick = { onSelectPreset(presetName) },
                     label = { Text(presetName, fontSize = 11.sp) },
                     colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = Color(0xFF23183E),
+                        selectedContainerColor = AcousticPebbleColors.SurfaceContainerHigh,
                         selectedLabelColor = gold
                     )
                 )
@@ -98,10 +97,10 @@ fun SpatialDepthStageCard(
                     modifier = Modifier
                         .weight(1f)
                         .clip(RoundedCornerShape(10.dp))
-                        .background(if (selected) Color(0xFF191530) else Color(0xFF070A14))
+                        .background(if (selected) AcousticPebbleColors.SurfaceContainerHigh else AcousticPebbleColors.SurfaceContainerLowest)
                         .border(
                             width = if (selected) 1.4.dp else 1.dp,
-                            color = if (selected) gold else Color(0xFF1E293B),
+                            color = if (selected) gold else AcousticPebbleColors.OutlineVariant,
                             shape = RoundedCornerShape(10.dp)
                         )
                         .clickable {
@@ -112,20 +111,21 @@ fun SpatialDepthStageCard(
                 ) {
                     Text(
                         text = mode.shortBadge,
-                        color = if (selected) gold else Color(0xFF64748B),
+                        color = if (selected) gold else AcousticPebbleColors.OnSurfaceVariant,
                         fontSize = 9.sp,
-                        fontFamily = FontFamily.Monospace,
+                        fontFamily = PlusJakartaSansFamily,
+                        letterSpacing = 0.5.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = if (mode == OutputStageMode.PURE_MONO) "完全モノラル" else "ナローステレオ",
-                        color = Color.White,
+                        color = AcousticPebbleColors.OnSurface,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = if (mode == OutputStageMode.PURE_MONO) "L=R同一・Z軸前後表現" else "低域モノ固定＋微細幅調整",
-                        color = Color(0xFF94A3B8),
+                        color = AcousticPebbleColors.OnSurfaceVariant,
                         fontSize = 10.sp
                     )
                 }
@@ -138,7 +138,7 @@ fun SpatialDepthStageCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(10.dp))
-                    .background(Color(0xFF070B16))
+                    .background(AcousticPebbleColors.SurfaceContainerLowest)
                     .padding(horizontal = 10.dp, vertical = 8.dp)
             ) {
                 Row(
@@ -147,7 +147,7 @@ fun SpatialDepthStageCard(
                 ) {
                     Text(
                         text = "ナローステレオ幅 (180Hz以下は完全モノラル固定)",
-                        color = Color(0xFFE2E8F0),
+                        color = AcousticPebbleColors.OnSurface,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -155,7 +155,8 @@ fun SpatialDepthStageCard(
                         text = "${config.narrowWidthPercent.toInt()}%",
                         color = gold,
                         fontSize = 12.sp,
-                        fontFamily = FontFamily.Monospace,
+                        fontFamily = PlusJakartaSansFamily,
+                        letterSpacing = 0.5.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -176,8 +177,8 @@ fun SpatialDepthStageCard(
                 .fillMaxWidth()
                 .height(106.dp)
                 .clip(RoundedCornerShape(10.dp))
-                .background(Color(0xFF05070E))
-                .border(1.dp, Color(0xFF1A2238), RoundedCornerShape(10.dp))
+                .background(AcousticPebbleColors.SurfaceContainerLowest)
+                .border(1.dp, AcousticPebbleColors.SurfaceContainerHigh, RoundedCornerShape(10.dp))
         ) {
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val w = size.width
@@ -213,7 +214,7 @@ fun SpatialDepthStageCard(
                 for (g in 1..3) {
                     val gy = listenerY - (h * 0.76f) * (g / 3f)
                     drawLine(
-                        color = Color(0xFF1E293B),
+                        color = AcousticPebbleColors.OutlineVariant.copy(alpha = 0.5f),
                         start = Offset(w * 0.12f, gy),
                         end = Offset(w * 0.88f, gy),
                         strokeWidth = 1f
@@ -273,13 +274,15 @@ fun SpatialDepthStageCard(
                     text = "奥 (Z-Rear: Side空間 ${"%.0f".format(telemetry.spatialSideRatio * 100f)}%)",
                     color = violet,
                     fontSize = 9.sp,
-                    fontFamily = FontFamily.Monospace
+                    fontFamily = PlusJakartaSansFamily,
+                    letterSpacing = 0.5.sp
                 )
                 Text(
                     text = "手前 (Z-Front: Mid芯)",
                     color = gold,
                     fontSize = 9.sp,
-                    fontFamily = FontFamily.Monospace
+                    fontFamily = PlusJakartaSansFamily,
+                    letterSpacing = 0.5.sp
                 )
             }
         }
@@ -292,7 +295,7 @@ fun SpatialDepthStageCard(
         ) {
             Text(
                 text = "ステレオSide空間系・前後奥行きエフェクト",
-                color = Color.White,
+                color = AcousticPebbleColors.OnSurface,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold
             )
@@ -302,8 +305,8 @@ fun SpatialDepthStageCard(
                     onUpdateConfig(config.copy(depthEnabled = it, presetName = "Custom"))
                 },
                 colors = SwitchDefaults.colors(
-                    checkedThumbColor = gold,
-                    checkedTrackColor = Color(0xFF2D1E4A)
+                    checkedThumbColor = AcousticPebbleColors.Primary,
+                    checkedTrackColor = AcousticPebbleColors.PrimaryContainer.copy(alpha = 0.45f)
                 )
             )
         }
@@ -359,12 +362,13 @@ private fun SpatialSliderRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(text = label, color = Color(0xFFCBD5E1), fontSize = 11.sp)
+            Text(text = label, color = AcousticPebbleColors.OnSurface, fontSize = 11.sp)
             Text(
                 text = valueText,
                 color = accent,
                 fontSize = 11.sp,
-                fontFamily = FontFamily.Monospace,
+                fontFamily = PlusJakartaSansFamily,
+                letterSpacing = 0.5.sp,
                 fontWeight = FontWeight.Bold
             )
         }
