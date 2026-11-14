@@ -39,6 +39,14 @@ class MonoPlayerViewModel(application: Application) : AndroidViewModel(applicati
     val allTracks: StateFlow<List<TrackItem>> = _allTracks.asStateFlow()
 
     private val _safFolderUris = MutableStateFlow(prefsRepo.loadSafFolders())
+    private val _excludedFolders = MutableStateFlow(prefsRepo.loadExcludedFolders())
+    val excludedFolders: StateFlow<Set<String>> = _excludedFolders.asStateFlow()
+
+    fun excludeFolder(folderPath: String) {
+        val next = _excludedFolders.value + folderPath
+        _excludedFolders.value = next
+        prefsRepo.saveExcludedFolders(next)
+    }
     val safFolderUris: StateFlow<List<String>> = _safFolderUris.asStateFlow()
 
     private val _customArtistAliases = MutableStateFlow(prefsRepo.loadCustomArtistAliases())

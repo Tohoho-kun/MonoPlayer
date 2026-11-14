@@ -41,6 +41,10 @@ object ArtistNormalizer {
         // 1. NFKC Unicode normalization (converts full-width letters/numbers/spaces to half-width, half-width katakana to full-width)
         var s = Normalizer.normalize(input, Normalizer.Form.NFKC).trim()
 
+        // 1.5. Unify hyphen/dash/prolonged-sound and tilde/wave-dash variants
+        s = s.replace(Regex("[\u2010-\u2015\u2212\uFF0D\u30FC\uFF70\\-]"), "-")
+            .replace(Regex("[\u007E\u301C\uFF5E\u3030\u223D]"), "~")
+
         // 2. Strip featuring suffix
         s = FEAT_REGEX.replace(s, "").trim()
 

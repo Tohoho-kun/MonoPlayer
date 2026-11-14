@@ -55,6 +55,19 @@ class AppPreferencesRepository(context: Context) {
         prefs.edit().putString("saf_folders_json", json.encodeToString(uris)).apply()
     }
 
+    fun loadExcludedFolders(): Set<String> {
+        val raw = prefs.getString("excluded_folders_json", null) ?: return emptySet()
+        return try {
+            json.decodeFromString<List<String>>(raw).toSet()
+        } catch (_: Exception) {
+            emptySet()
+        }
+    }
+
+    fun saveExcludedFolders(folders: Set<String>) {
+        prefs.edit().putString("excluded_folders_json", json.encodeToString(folders.toList())).apply()
+    }
+
     fun loadCustomArtistAliases(): Map<String, String> {
         val raw = prefs.getString("artist_aliases_json", null) ?: return emptyMap()
         return try {
