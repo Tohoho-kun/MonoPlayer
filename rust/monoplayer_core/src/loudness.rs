@@ -324,7 +324,8 @@ impl LoudnessNormalizerEngine {
                         ((base_deficit * upward_ratio).min(max_upward_boost) + speed_gain_db)
                             .min(26.0)
                     } else {
-                        base_deficit.max(-18.0) + speed_gain_db
+                        // Dampen downward attenuation on loud mastered tracks so speed boost remains effective
+                        (base_deficit * 0.40).max(-5.5) + speed_gain_db
                     }
                 }
             };
@@ -343,23 +344,25 @@ impl LoudnessNormalizerEngine {
             }
         }
 
-        // Reserve spectral headroom for NoisyCar bells so hot tracks don't slam post-EQ into clipping,
-        // and feed back any post-EQ peak overshoot above -1.4 dBFS (0.85 linear).
+        // Feed back post-EQ peak overshoot above 0.90 linear while allowing full car speed headroom
+        // (final peak ceiling is protected by MasteringPeakLimiter)
         let eq_reserve_db = if params.mode == LoudnessModeCode::NoisyCar {
-            let active_eq = (self.last_bass_punch_db * 0.42 + self.dynamic_clarity_boost_db * 0.22)
-                .clamp(0.0, 5.2);
-            let post_over_db = if self.post_eq_peak_env > 0.85 {
-                (20.0 * (self.post_eq_peak_env / 0.85).log10()).clamp(0.0, 9.0)
+            if self.post_eq_peak_env > 0.90 {
+                (20.0 * (self.post_eq_peak_env / 0.90).log10()).clamp(0.0, 6.0)
             } else {
                 0.0
-            };
-            active_eq.max(post_over_db)
+            }
         } else {
             0.0
         };
 
+        let ceiling_linear = if params.mode == LoudnessModeCode::NoisyCar {
+            1.35
+        } else {
+            PEAK_CEILING_LINEAR
+        };
         let max_safe_gain_db = if self.lookahead_peak_env > 1.0e-4 {
-            20.0 * (PEAK_CEILING_LINEAR / self.lookahead_peak_env).log10() - eq_reserve_db
+            20.0 * (ceiling_linear / self.lookahead_peak_env).log10() - eq_reserve_db
         } else {
             18.0
         };
@@ -394,11 +397,11 @@ impl LoudnessNormalizerEngine {
             } else {
                 1.0
             };
-            let bass_punch_db = (1.0 + 3.6 * intensity) * headroom_scale;
+            let bass_punch_db = (2.2 + 2.4 * intensity) * headroom_scale;
             self.last_bass_punch_db = bass_punch_db;
             self.car_upper_bass_bell.set_bell(self.sr, 95.0, 0.90, bass_punch_db);
             let quietness_factor = ((-8.0 - self.measured_lufs) / 24.0).clamp(0.25, 1.0);
-            let clarity_db = (6.8 * intensity * quietness_factor).clamp(0.0, 10.5) * headroom_scale;
+            let clarity_db = ((2.2 + 4.6 * intensity) * quietness_factor).clamp(0.0, 10.5) * headroom_scale;
             self.dynamic_clarity_boost_db = clarity_db;
             self.car_vocal_clarity_bell.set_bell(self.sr, 2600.0, 0.85, clarity_db);
         } else {

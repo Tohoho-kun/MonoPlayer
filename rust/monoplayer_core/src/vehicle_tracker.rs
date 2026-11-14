@@ -289,7 +289,7 @@ impl VehicleTrackerEngine {
         self.last_gps_speed_kmh = valid_speed;
         self.estimated_speed_kmh = valid_speed;
 
-        let alpha_speed = 0.18;
+        let alpha_speed = 0.25;
         self.smoothed_speed_kmh += alpha_speed * (valid_speed - self.smoothed_speed_kmh);
         self.smoothed_speed_kmh = sanitize_f32(self.smoothed_speed_kmh).max(0.0);
 
@@ -357,7 +357,7 @@ impl VehicleTrackerEngine {
         if self.is_handheld {
             let ref_angle = g_hat.angle_to(self.steady_ref_g);
             let rock_steady =
-                ref_angle < 0.06 && dg_dt < 0.12 && (!has_gyro || w_off_vertical < 0.12);
+                ref_angle < 0.08 && dg_dt < 0.20 && (!has_gyro || w_off_vertical < 0.20);
             if rock_steady {
                 self.steady_recovery_timer += dt;
                 if self.steady_recovery_timer >= Self::HANDHELD_RECOVERY_SEC {
@@ -390,8 +390,10 @@ impl VehicleTrackerEngine {
                     self.reset_calib_window(None);
                 }
             } else {
-                self.steady_recovery_timer = 0.0;
-                self.steady_ref_g = g_hat;
+                self.steady_recovery_timer = (self.steady_recovery_timer - dt * 1.5).max(0.0);
+                if ref_angle >= 0.12 || dg_dt >= 0.35 {
+                    self.steady_ref_g = g_hat;
+                }
             }
 
             if self.is_handheld {
@@ -408,10 +410,15 @@ impl VehicleTrackerEngine {
                 };
             }
         } else if self.has_g_anchor {
-            // Stricter bump guard at higher vehicle speeds
+            // Stricter bump guard at higher vehicle speeds (and extra margin for mount touches while moving)
             let high_speed_factor = ((self.smoothed_speed_kmh - 30.0) / 50.0).clamp(0.0, 1.0);
+            let moving_boost = if self.smoothed_speed_kmh > 15.0 {
+                0.15 * high_speed_factor
+            } else {
+                0.0
+            };
             let tilt_angle = g_hat.angle_to(self.g_anchor);
-            let tilt_sustain_req = 0.25 + 0.35 * high_speed_factor;
+            let tilt_sustain_req = 0.25 + 0.35 * high_speed_factor + moving_boost;
 
             if tilt_angle > Self::HANDHELD_TILT_ANGLE_RAD {
                 self.handheld_tilt_timer += dt;
@@ -421,7 +428,7 @@ impl VehicleTrackerEngine {
 
             let rot_rate = dg_dt.max(w_off_vertical);
             let rot_rate_thresh = 0.80 + 0.60 * high_speed_factor;
-            let rot_sustain_req = 0.20 + 0.25 * high_speed_factor;
+            let rot_sustain_req = 0.20 + 0.25 * high_speed_factor + moving_boost;
 
             if rot_rate > rot_rate_thresh {
                 self.handheld_rot_timer += dt;

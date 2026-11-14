@@ -99,10 +99,14 @@ class AppPreferencesRepository(context: Context) {
         val raw = prefs.getString("loudness_config_json", null) ?: return LoudnessConfig()
         return try {
             val decoded = json.decodeFromString<LoudnessConfig>(raw)
-            // Migrate legacy v1 configs that had no headroom schema version and used -11 LUFS default
-            if (!raw.contains("\"headroomSchemaVersion\"")) {
-                val migratedTarget = if (decoded.carTargetLufs > -13.0f) -19.0f else decoded.carTargetLufs
-                val migrated = decoded.copy(carTargetLufs = migratedTarget, headroomSchemaVersion = 2)
+            // Migrate legacy v1/v2 configs to v3 (-14.0 LUFS car default for effective cabin loudness)
+            if (!raw.contains("\"headroomSchemaVersion\"") || decoded.headroomSchemaVersion < 3) {
+                val migratedTarget = if (decoded.carTargetLufs <= -18.5f || (!raw.contains("\"headroomSchemaVersion\"") && decoded.carTargetLufs > -13.0f)) {
+                    -14.0f
+                } else {
+                    decoded.carTargetLufs
+                }
+                val migrated = decoded.copy(carTargetLufs = migratedTarget, headroomSchemaVersion = 3)
                 saveLoudnessConfig(migrated)
                 migrated
             } else {

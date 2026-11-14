@@ -47,6 +47,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 
 /**
@@ -146,6 +147,26 @@ class MonoPlaybackService : MediaSessionService() {
     override fun onCreate() {
         super.onCreate()
         prefsRepo = AppPreferencesRepository(this)
+        if (!DspStateHolder.isInitializedFromPrefs) {
+            DspStateHolder.crossfadeSec = prefsRepo.loadCrossfadeSeconds()
+            DspStateHolder.updateLoudnessConfig(prefsRepo.loadLoudnessConfig())
+            DspStateHolder.updateDynamicEqConfig(prefsRepo.loadDynamicEqConfig())
+            DspStateHolder.updateSpatialConfig(prefsRepo.loadSpatialConfig())
+            DspStateHolder.setManualSyncOffsetMs(prefsRepo.loadSyncOffsetMs())
+            DspStateHolder.isInitializedFromPrefs = true
+        }
+        serviceScope.launch {
+            DspStateHolder.loudnessConfigFlow.drop(1).collect { prefsRepo.saveLoudnessConfig(it) }
+        }
+        serviceScope.launch {
+            DspStateHolder.dynamicEqConfigFlow.drop(1).collect { prefsRepo.saveDynamicEqConfig(it) }
+        }
+        serviceScope.launch {
+            DspStateHolder.spatialConfigFlow.drop(1).collect { prefsRepo.saveSpatialConfig(it) }
+        }
+        serviceScope.launch {
+            DspStateHolder.syncOffsetMsFlow.drop(1).collect { prefsRepo.saveSyncOffsetMs(it) }
+        }
 
         val dspProcessor = MonoDspAudioProcessor()
 

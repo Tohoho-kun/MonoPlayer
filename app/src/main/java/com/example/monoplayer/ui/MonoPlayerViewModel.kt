@@ -174,11 +174,14 @@ class MonoPlayerViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     init {
-        DspStateHolder.crossfadeSec = _crossfadeSec.value
-        DspStateHolder.updateLoudnessConfig(prefsRepo.loadLoudnessConfig())
-        DspStateHolder.updateDynamicEqConfig(prefsRepo.loadDynamicEqConfig())
-        DspStateHolder.updateSpatialConfig(prefsRepo.loadSpatialConfig())
-        DspStateHolder.setManualSyncOffsetMs(prefsRepo.loadSyncOffsetMs())
+        if (!DspStateHolder.isInitializedFromPrefs) {
+            DspStateHolder.crossfadeSec = _crossfadeSec.value
+            DspStateHolder.updateLoudnessConfig(prefsRepo.loadLoudnessConfig())
+            DspStateHolder.updateDynamicEqConfig(prefsRepo.loadDynamicEqConfig())
+            DspStateHolder.updateSpatialConfig(prefsRepo.loadSpatialConfig())
+            DspStateHolder.setManualSyncOffsetMs(prefsRepo.loadSyncOffsetMs())
+            DspStateHolder.isInitializedFromPrefs = true
+        }
         viewModelScope.launch {
             DspStateHolder.loudnessConfigFlow.drop(1).collect { prefsRepo.saveLoudnessConfig(it) }
         }
@@ -254,10 +257,7 @@ class MonoPlayerViewModel(application: Application) : AndroidViewModel(applicati
 
         if (syncPlayerIfIdle) {
             val controller = mediaController
-            val isServiceAlreadyPlayingAnother = controller != null &&
-                controller.mediaItemCount > 0 &&
-                controller.currentMediaItem?.mediaId != null
-            if (!isServiceAlreadyPlayingAnother) {
+            if (controller != null && controller.mediaItemCount == 0) {
                 prepareQueueInPlayer(
                     queue = restoredQueue,
                     startIndex = restoredIdx,
@@ -525,6 +525,9 @@ class MonoPlayerViewModel(application: Application) : AndroidViewModel(applicati
                 delay(250L)
                 mediaController?.let { prepareQueueInPlayer(queue, startIndex, playImmediately, startPositionMs) }
             }
+            return
+        }
+        if (!playImmediately && controller.mediaItemCount > 0) {
             return
         }
 

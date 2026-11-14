@@ -175,11 +175,7 @@ fun CarCockpitStage(
         label = "car_speed"
     )
 
-    val clampedIntensity = if (isHandheld && config.autoSpeedEnabled) {
-        0f
-    } else {
-        config.carCabinIntensity.coerceIn(0f, 2f)
-    }
+    val clampedIntensity = config.carCabinIntensity.coerceIn(0f, 2f)
     val intensityPercent = clampedIntensity * 100f
     val speedGainDb = clampedIntensity * 4.4f
     val liveBassPunchDb = activeTelemetry.carBassBoostDb
