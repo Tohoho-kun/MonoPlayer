@@ -107,12 +107,17 @@ private val GoogleFontsProvider = GoogleFont.Provider(
 )
 
 private val PlusJakartaSansFont = GoogleFont("Plus Jakarta Sans")
+private val NotoSansJpFont = GoogleFont("Noto Sans JP")
 
 val PlusJakartaSansFamily = FontFamily(
     Font(googleFont = PlusJakartaSansFont, fontProvider = GoogleFontsProvider, weight = FontWeight.Normal),
     Font(googleFont = PlusJakartaSansFont, fontProvider = GoogleFontsProvider, weight = FontWeight.Medium),
     Font(googleFont = PlusJakartaSansFont, fontProvider = GoogleFontsProvider, weight = FontWeight.SemiBold),
     Font(googleFont = PlusJakartaSansFont, fontProvider = GoogleFontsProvider, weight = FontWeight.Bold),
+    Font(googleFont = NotoSansJpFont, fontProvider = GoogleFontsProvider, weight = FontWeight.Normal),
+    Font(googleFont = NotoSansJpFont, fontProvider = GoogleFontsProvider, weight = FontWeight.Medium),
+    Font(googleFont = NotoSansJpFont, fontProvider = GoogleFontsProvider, weight = FontWeight.SemiBold),
+    Font(googleFont = NotoSansJpFont, fontProvider = GoogleFontsProvider, weight = FontWeight.Bold),
 )
 
 private val AcousticPebbleTypography = Typography(
