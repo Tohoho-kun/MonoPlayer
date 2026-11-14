@@ -116,21 +116,26 @@ class ThreeBandDynamicEq(sampleRate: Int = 48000) {
 
     fun getDynamicGainDeltasDb(): FloatArray = floatArrayOf(currentDynDeltaDb[0], currentDynDeltaDb[1], currentDynDeltaDb[2])
 
+    private var lastPackedConfig: DynamicEqConfig? = null
+
+    private fun packBand(off: Int, b: DynamicBandConfig) {
+        packedConfig25[off] = if (b.enabled) 1f else 0f
+        packedConfig25[off + 1] = b.freqHz
+        packedConfig25[off + 2] = b.q
+        packedConfig25[off + 3] = b.staticGainDb
+        packedConfig25[off + 4] = b.thresholdDb
+        packedConfig25[off + 5] = b.maxDynamicGainDb
+        packedConfig25[off + 6] = b.attackMs
+        packedConfig25[off + 7] = b.releaseMs
+    }
+
     private fun packConfig(config: DynamicEqConfig) {
+        if (config === lastPackedConfig) return
+        lastPackedConfig = config
         packedConfig25[0] = if (config.enabled) 1f else 0f
-        val bands = arrayOf(config.low, config.mid, config.high)
-        for (i in 0..2) {
-            val b = bands[i]
-            val off = 1 + i * 8
-            packedConfig25[off] = if (b.enabled) 1f else 0f
-            packedConfig25[off + 1] = b.freqHz
-            packedConfig25[off + 2] = b.q
-            packedConfig25[off + 3] = b.staticGainDb
-            packedConfig25[off + 4] = b.thresholdDb
-            packedConfig25[off + 5] = b.maxDynamicGainDb
-            packedConfig25[off + 6] = b.attackMs
-            packedConfig25[off + 7] = b.releaseMs
-        }
+        packBand(1, config.low)
+        packBand(9, config.mid)
+        packBand(17, config.high)
     }
 
     private fun unpackTelemetry() {
@@ -142,15 +147,15 @@ class ThreeBandDynamicEq(sampleRate: Int = 48000) {
 
     @Synchronized
     fun processMonoSample(input: Float, config: DynamicEqConfig): Float {
+        if (!config.enabled) {
+            for (i in 0..2) currentDynDeltaDb[i] *= 0.98f
+            return input
+        }
         if (nativeHandle != 0L) {
             packConfig(config)
             val y = RustNativeBridge.nativeDynEqProcessMono(nativeHandle, input, packedConfig25, telemetryOut6)
             unpackTelemetry()
             return y
-        }
-        if (!config.enabled) {
-            for (i in 0..2) currentDynDeltaDb[i] *= 0.98f
-            return input
         }
         updateSidechainAndFilters(input, config)
         var y = input
@@ -162,16 +167,16 @@ class ThreeBandDynamicEq(sampleRate: Int = 48000) {
 
     @Synchronized
     fun processStereoSample(inL: Float, inR: Float, config: DynamicEqConfig, outPair: FloatArray) {
-        if (nativeHandle != 0L) {
-            packConfig(config)
-            RustNativeBridge.nativeDynEqProcessStereo(nativeHandle, inL, inR, packedConfig25, outPair, telemetryOut6)
-            unpackTelemetry()
-            return
-        }
         if (!config.enabled) {
             for (i in 0..2) currentDynDeltaDb[i] *= 0.98f
             outPair[0] = inL
             outPair[1] = inR
+            return
+        }
+        if (nativeHandle != 0L) {
+            packConfig(config)
+            RustNativeBridge.nativeDynEqProcessStereo(nativeHandle, inL, inR, packedConfig25, outPair, telemetryOut6)
+            unpackTelemetry()
             return
         }
         val midDetector = sqrt(0.5f * (inL * inL + inR * inR)) * (if (inL + inR >= 0f) 1f else -1f)
