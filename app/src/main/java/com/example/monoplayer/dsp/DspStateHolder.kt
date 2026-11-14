@@ -158,6 +158,13 @@ object DspStateHolder {
     private val _carForwardCalibratedFlow = MutableStateFlow(false)
     val carForwardCalibratedFlow: StateFlow<Boolean> = _carForwardCalibratedFlow.asStateFlow()
 
+    private val _speedTrackerReevalFlow = MutableStateFlow(0)
+    val speedTrackerReevalFlow: StateFlow<Int> = _speedTrackerReevalFlow.asStateFlow()
+
+    fun notifyLocationPermissionGranted() {
+        _speedTrackerReevalFlow.value += 1
+    }
+
     fun updateVehicleSpeed(
         speedKmh: Float,
         source: SpeedTrackingSource,
@@ -246,27 +253,42 @@ object DspStateHolder {
         _syncOffsetMsFlow.value = clamped
     }
 
+    private fun withLatestVehicleTelemetry(data: VisualizerTelemetry): VisualizerTelemetry {
+        return if (data.detectedSpeedKmh == currentDetectedSpeedKmh &&
+            data.speedSource == currentSpeedSource &&
+            data.carForwardCalibrated == currentCarForwardCalibrated
+        ) {
+            data
+        } else {
+            data.copy(
+                detectedSpeedKmh = currentDetectedSpeedKmh,
+                speedSource = currentSpeedSource,
+                carForwardCalibrated = currentCarForwardCalibrated
+            )
+        }
+    }
+
     fun publishTelemetry(
         data: VisualizerTelemetry,
         produceRealtimeMs: Long = System.nanoTime() / 1_000_000L,
         queuedStreamMs: Long = 0L,
         flushGen: Int = syncBuffer.flushGeneration
     ) {
-        val enriched = if (data.carForwardCalibrated == currentCarForwardCalibrated) {
-            data
-        } else {
-            data.copy(carForwardCalibrated = currentCarForwardCalibrated)
-        }
+        val enriched = withLatestVehicleTelemetry(data)
         syncBuffer.push(enriched, produceRealtimeMs, queuedStreamMs, flushGen)
         // Expose latency-compensated frame to general StateFlow observers as well
-        _telemetry.value = syncBuffer.sampleAt(produceRealtimeMs) ?: enriched
+        _telemetry.value = withLatestVehicleTelemetry(syncBuffer.sampleAt(produceRealtimeMs) ?: enriched)
     }
 
     fun pollSyncedTelemetry(nowRealtimeMs: Long = System.nanoTime() / 1_000_000L): VisualizerTelemetry {
         val synced = syncBuffer.sampleAt(nowRealtimeMs)
-        if (synced != null && synced !== _telemetry.value) {
-            _telemetry.value = synced
+        if (synced != null) {
+            val fresh = withLatestVehicleTelemetry(synced)
+            if (fresh !== _telemetry.value) {
+                _telemetry.value = fresh
+            }
+            return fresh
         }
-        return synced ?: _telemetry.value
+        return _telemetry.value
     }
 }

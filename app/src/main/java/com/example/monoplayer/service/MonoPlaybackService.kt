@@ -311,6 +311,11 @@ class MonoPlaybackService : MediaSessionService() {
                 evaluateSpeedTrackerState()
             }
         }
+        serviceScope.launch {
+            DspStateHolder.speedTrackerReevalFlow.drop(1).collectLatest {
+                evaluateSpeedTrackerState()
+            }
+        }
     }
 
     private fun preloadPersistedQueueIntoPlayerIfIdle(exoPlayer: ExoPlayer) {
