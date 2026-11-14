@@ -50,6 +50,7 @@ object DspStateHolder {
     @Volatile var eqEnabled: Boolean = true
     @Volatile var crossfadeSec: Float = 0.0f       // Crossfade duration in seconds (0 = off)
     @Volatile var crossfadeMultiplier: Float = 1.0f // Controlled by crossfade engine (0..1)
+    @Volatile var isInitializedFromPrefs: Boolean = false
 
     fun resetCrossfadeOnTrackBoundary() {
         crossfadeMultiplier = 1.0f

@@ -44,12 +44,12 @@ enum class SpeedTrackingSource(val label: String) {
 data class LoudnessConfig(
     val mode: LoudnessMode = LoudnessMode.OFF,
     val normalTargetLufs: Float = -14.0f,       // -20.0 .. -9.0 LUFS
-    val carTargetLufs: Float = -19.0f,          // -24.0 .. -8.0 LUFS (停車基準・ヘッドルーム確保)
+    val carTargetLufs: Float = -14.0f,          // -24.0 .. -8.0 LUFS (停車基準・標準ラウドネス基準)
     val carCabinIntensity: Float = 0.70f,       // 0.0 (停車) .. 1.0 (標準巡航) .. 2.0 (最大)
     val autoSpeedEnabled: Boolean = false,      // 車速連動自体のオン/オフ
     val speedCompensationFactor: Float = 1.0f,  // 0.2 .. 2.0 (音の増減係数: 標準1.0 / 最大2.0)
     val speedReferenceKmh: Float = 80.0f,       // 50.0 .. 130.0 km/h (基準補正に達する速度)
-    val headroomSchemaVersion: Int = 2
+    val headroomSchemaVersion: Int = 3
 )
 
 @Serializable

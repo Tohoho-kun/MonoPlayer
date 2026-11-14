@@ -11,6 +11,7 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
+import android.os.Looper
 import android.os.SystemClock
 import androidx.core.content.ContextCompat
 import kotlin.math.abs
@@ -32,9 +33,9 @@ import kotlin.math.sqrt
 class VehicleSpeedTracker(private val context: Context) : LocationListener, SensorEventListener {
 
     companion object {
-        private const val GPS_MIN_TIME_MS = 2500L
-        private const val GPS_MIN_DISTANCE_M = 4.0f
-        private const val GPS_TIMEOUT_MS = 4500L
+        private const val GPS_MIN_TIME_MS = 1000L
+        private const val GPS_MIN_DISTANCE_M = 0.0f
+        private const val GPS_TIMEOUT_MS = 12000L
         private const val VIBRATION_STOP_THRESHOLD = 0.08f // Below this -> engine idle / stationary vehicle
         private const val GRAVITY_LPF_TAU_SEC = 0.8f
         private const val GYRO_STALE_NS = 500_000_000L
@@ -236,20 +237,30 @@ class VehicleSpeedTracker(private val context: Context) : LocationListener, Sens
     private fun registerGpsUpdates() {
         try {
             if (locationManager != null && hasLocationPermission(context)) {
+                val looper = Looper.getMainLooper()
                 if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                     locationManager.requestLocationUpdates(
                         LocationManager.GPS_PROVIDER,
                         GPS_MIN_TIME_MS,
                         GPS_MIN_DISTANCE_M,
-                        this
+                        this,
+                        looper
                     )
+                    val lastLoc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                    if (lastLoc != null && lastLoc.hasSpeed()) {
+                        val ageMs = SystemClock.elapsedRealtime() - (lastLoc.elapsedRealtimeNanos / 1_000_000L)
+                        if (ageMs in 0L..14_999L) {
+                            onLocationChanged(lastLoc)
+                        }
+                    }
                 }
                 if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
                     locationManager.requestLocationUpdates(
                         LocationManager.NETWORK_PROVIDER,
                         GPS_MIN_TIME_MS * 2,
-                        GPS_MIN_DISTANCE_M * 2,
-                        this
+                        GPS_MIN_DISTANCE_M,
+                        this,
+                        looper
                     )
                 }
             }
@@ -451,7 +462,8 @@ class VehicleSpeedTracker(private val context: Context) : LocationListener, Sens
             if (isGpsLost ||
                 source == SpeedTrackingSource.HANDHELD ||
                 source != DspStateHolder.currentSpeedSource ||
-                forwardCalibrated != DspStateHolder.currentCarForwardCalibrated
+                forwardCalibrated != DspStateHolder.currentCarForwardCalibrated ||
+                abs(smoothed - DspStateHolder.currentDetectedSpeedKmh) >= 0.5f
             ) {
                 applyAutoLoudness(smoothed, source, forwardCalibrated)
             }
@@ -592,19 +604,19 @@ class VehicleSpeedTracker(private val context: Context) : LocationListener, Sens
         source: SpeedTrackingSource,
         forwardCalibrated: Boolean
     ) {
+        if (source == SpeedTrackingSource.HANDHELD) {
+            DspStateHolder.updateVehicleSpeed(0f, SpeedTrackingSource.HANDHELD, forwardCalibrated)
+            return
+        }
         DspStateHolder.updateVehicleSpeed(smoothedSpeed, source, forwardCalibrated)
 
         val cfg = DspStateHolder.loudnessConfig
         if (cfg.mode == LoudnessMode.NOISY_CAR && cfg.autoSpeedEnabled) {
-            val autoIntensity = if (source == SpeedTrackingSource.HANDHELD) {
-                0f
-            } else {
-                calculateIntensity(
-                    speedKmh = smoothedSpeed,
-                    speedRefKmh = cfg.speedReferenceKmh,
-                    compensationFactor = cfg.speedCompensationFactor
-                )
-            }
+            val autoIntensity = calculateIntensity(
+                speedKmh = smoothedSpeed,
+                speedRefKmh = cfg.speedReferenceKmh,
+                compensationFactor = cfg.speedCompensationFactor
+            )
             if (abs(cfg.carCabinIntensity - autoIntensity) > 0.01f) {
                 DspStateHolder.updateLoudnessConfig(cfg.copy(carCabinIntensity = autoIntensity))
             }

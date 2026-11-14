@@ -422,7 +422,7 @@ fun LoudnessNormalizerCard(
 
                         Column {
                             Text("連動補正 / 車速ゲイン", color = Color(0xFF64748B), fontSize = 9.sp)
-                            val effectiveIntensity = if (isHandheld) 0f else config.carCabinIntensity
+                            val effectiveIntensity = config.carCabinIntensity
                             Text(
                                 text = "${(effectiveIntensity * 100).toInt()}% (+${"%.1f".format(effectiveIntensity * 4.4f)} dB)",
                                 color = if (isHandheld) Color(0xFF94A3B8) else Color(0xFFD4AF37),

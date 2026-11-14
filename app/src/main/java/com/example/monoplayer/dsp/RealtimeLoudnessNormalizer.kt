@@ -474,7 +474,8 @@ class RealtimeLoudnessNormalizer(sampleRate: Int = 48000) {
                         val upwardRatio = (0.68f + 0.27f * intensity).coerceIn(0.68f, 1.0f)
                         min(min(baseDeficit * upwardRatio, maxUpwardBoost) + speedGainDb, 26.0f)
                     } else {
-                        baseDeficit.coerceAtLeast(-18.0f) + speedGainDb
+                        // Dampen downward attenuation on loud mastered tracks so speed boost remains effective
+                        (baseDeficit * 0.40f).coerceAtLeast(-5.5f) + speedGainDb
                     }
                 }
             }
@@ -493,17 +494,17 @@ class RealtimeLoudnessNormalizer(sampleRate: Int = 48000) {
             }
         }
 
-        // Lookahead Peak Ceiling Guard: reserve NoisyCar EQ headroom & feed back post-EQ peak overshoot
+        // Feed back post-EQ peak overshoot above 0.90 linear while allowing full car speed headroom
+        // (final peak ceiling is protected by MasteringPeakLimiter)
         val eqReserveDb = if (config.mode == LoudnessMode.NOISY_CAR) {
-            val activeEq = (lastBassPunchDb * 0.42f + dynamicClarityBoostDb * 0.22f).coerceIn(0f, 5.2f)
-            val postOverDb = if (postEqPeakEnv > 0.85f) {
-                (20f * log10(postEqPeakEnv / 0.85f)).coerceIn(0f, 9.0f)
+            if (postEqPeakEnv > 0.90f) {
+                (20f * log10(postEqPeakEnv / 0.90f)).coerceIn(0f, 6.0f)
             } else 0f
-            max(activeEq, postOverDb)
         } else 0f
 
+        val ceilingLinear = if (config.mode == LoudnessMode.NOISY_CAR) 1.35f else PEAK_CEILING_LINEAR
         val maxSafeGainDb = if (lookaheadPeakEnv > 1e-4f) {
-            20f * log10(PEAK_CEILING_LINEAR / lookaheadPeakEnv) - eqReserveDb
+            20f * log10(ceilingLinear / lookaheadPeakEnv) - eqReserveDb
         } else 18f
         val guardedTargetDb = min(targetGainDb, maxSafeGainDb)
 
@@ -525,14 +526,14 @@ class RealtimeLoudnessNormalizer(sampleRate: Int = 48000) {
             val headroomScale = if (postEqPeakEnv > 0.86f) {
                 (1f - ((postEqPeakEnv - 0.86f) / 0.45f)).coerceIn(0.45f, 1f)
             } else 1f
-            val bassPunchDb = (1.0f + 3.6f * intensity) * headroomScale
+            val bassPunchDb = (2.2f + 2.4f * intensity) * headroomScale
             lastBassPunchDb = bassPunchDb
             carBassBoostDb = bassPunchDb
             carUpperBassBell.setBell(sr, freqHz = 95.0f, q = 0.90f, gainDb = bassPunchDb)
 
-            // Boost vocal clarity (+0..+6.8 dB std, up to +10.5 dB max) scaling with passage quietness
+            // Boost vocal clarity (+2.2 idle -> +6.8 dB std, up to +10.5 dB max) scaling with passage quietness
             val quietnessFactor = ((-8.0f - measuredLufs) / 24.0f).coerceIn(0.25f, 1.0f)
-            val clarityDb = (6.8f * intensity * quietnessFactor).coerceIn(0f, 10.5f) * headroomScale
+            val clarityDb = ((2.2f + 4.6f * intensity) * quietnessFactor).coerceIn(0f, 10.5f) * headroomScale
             dynamicClarityBoostDb = clarityDb
             carVocalClarityBell.setBell(sr, freqHz = 2600.0f, q = 0.85f, gainDb = clarityDb)
         } else {
