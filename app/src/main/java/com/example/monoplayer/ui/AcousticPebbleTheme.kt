@@ -8,7 +8,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.googlefonts.Font
+import androidx.compose.ui.text.googlefonts.GoogleFont
 import androidx.compose.ui.unit.sp
+import com.example.monoplayer.R
 
 /**
  * "Acoustic Pebble" design system tokens from DESIGN.md.
@@ -97,44 +100,59 @@ private val AcousticPebbleColorScheme = darkColorScheme(
     surfaceContainerHighest = AcousticPebbleColors.SurfaceContainerHighest,
 )
 
+private val GoogleFontsProvider = GoogleFont.Provider(
+    providerAuthority = "com.google.android.gms.fonts",
+    providerPackage = "com.google.android.gms",
+    certificates = R.array.com_google_android_gms_fonts_certs
+)
+
+private val PlusJakartaSansFont = GoogleFont("Plus Jakarta Sans")
+
+val PlusJakartaSansFamily = FontFamily(
+    Font(googleFont = PlusJakartaSansFont, fontProvider = GoogleFontsProvider, weight = FontWeight.Normal),
+    Font(googleFont = PlusJakartaSansFont, fontProvider = GoogleFontsProvider, weight = FontWeight.Medium),
+    Font(googleFont = PlusJakartaSansFont, fontProvider = GoogleFontsProvider, weight = FontWeight.SemiBold),
+    Font(googleFont = PlusJakartaSansFont, fontProvider = GoogleFontsProvider, weight = FontWeight.Bold),
+)
+
 private val AcousticPebbleTypography = Typography(
     headlineLarge = TextStyle(
-        fontFamily = FontFamily.SansSerif,
+        fontFamily = PlusJakartaSansFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 28.sp,
         lineHeight = 36.sp,
         letterSpacing = (-0.42).sp,
     ),
     headlineMedium = TextStyle(
-        fontFamily = FontFamily.SansSerif,
+        fontFamily = PlusJakartaSansFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 22.sp,
         lineHeight = 30.sp,
         letterSpacing = (-0.22).sp,
     ),
     bodyLarge = TextStyle(
-        fontFamily = FontFamily.SansSerif,
+        fontFamily = PlusJakartaSansFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
         letterSpacing = (-0.08).sp,
     ),
     bodyMedium = TextStyle(
-        fontFamily = FontFamily.SansSerif,
+        fontFamily = PlusJakartaSansFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.sp,
     ),
     labelMedium = TextStyle(
-        fontFamily = FontFamily.SansSerif,
+        fontFamily = PlusJakartaSansFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 12.sp,
         lineHeight = 16.sp,
         letterSpacing = 0.48.sp,
     ),
     labelSmall = TextStyle(
-        fontFamily = FontFamily.SansSerif,
+        fontFamily = PlusJakartaSansFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 10.sp,
         lineHeight = 14.sp,
