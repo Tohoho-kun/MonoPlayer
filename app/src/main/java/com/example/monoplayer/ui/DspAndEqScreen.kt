@@ -20,7 +20,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layout
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
@@ -80,7 +79,7 @@ fun DspAndEqScreen(
                     )
                     Text(
                         text = "高音質モノラル化アルゴリズム選択 (リアルタイム切替)",
-                        color = Color.White,
+                        color = AcousticPebbleColors.OnSurface,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -90,7 +89,7 @@ fun DspAndEqScreen(
             MonoAlgorithm.entries.forEach { algo ->
                 val isSelected = algo == activeAlgo
                 val borderColor = if (isSelected) AcousticPebbleColors.PrimaryContainer else AcousticPebbleColors.SurfaceContainerHigh
-                val bgColor = if (isSelected) AcousticPebbleColors.SurfaceContainerHigh.copy(alpha = 0.9f) else Color(0xFF020617).copy(alpha = 0.7f)
+                val bgColor = if (isSelected) AcousticPebbleColors.SurfaceContainerHigh else AcousticPebbleColors.SurfaceContainerLowest
 
                 Column(
                     modifier = Modifier
@@ -125,13 +124,14 @@ fun DspAndEqScreen(
                                     text = algo.badge,
                                     color = if (algo == MonoAlgorithm.NAIVE) AcousticPebbleColors.Error else AcousticPebbleColors.PrimaryContainer,
                                     fontSize = 9.sp,
-                                    fontFamily = FontFamily.Monospace,
+                                    fontFamily = PlusJakartaSansFamily,
+                                    letterSpacing = 0.5.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
                             Text(
                                 text = algo.title,
-                                color = Color.White,
+                                color = AcousticPebbleColors.OnSurface,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -158,7 +158,8 @@ fun DspAndEqScreen(
                         text = algo.formula,
                         color = AcousticPebbleColors.PrimaryContainer.copy(alpha = 0.85f),
                         fontSize = 10.sp,
-                        fontFamily = FontFamily.Monospace
+                        fontFamily = PlusJakartaSansFamily,
+                        letterSpacing = 0.5.sp
                     )
                 }
             }
@@ -181,7 +182,8 @@ fun DspAndEqScreen(
                         text = "${sparkleBlend.toInt()}%",
                         color = AcousticPebbleColors.PrimaryContainer,
                         fontSize = 12.sp,
-                        fontFamily = FontFamily.Monospace,
+                        fontFamily = PlusJakartaSansFamily,
+                        letterSpacing = 0.5.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -211,7 +213,8 @@ fun DspAndEqScreen(
                         text = "${crossoverHz.toInt()} Hz",
                         color = AcousticPebbleColors.PrimaryContainer,
                         fontSize = 12.sp,
-                        fontFamily = FontFamily.Monospace,
+                        fontFamily = PlusJakartaSansFamily,
+                        letterSpacing = 0.5.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -254,7 +257,7 @@ fun DspAndEqScreen(
         ) {
             Text(
                 text = "プリアンプ・ゲイン調整 & クロスフェード",
-                color = Color.White,
+                color = AcousticPebbleColors.OnSurface,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -271,9 +274,10 @@ fun DspAndEqScreen(
                 )
                 Text(
                     text = String.format("%+.1f dB", preampDb),
-                    color = Color(0xFF34D399),
+                    color = AcousticPebbleColors.PrimaryContainer,
                     fontSize = 12.sp,
-                    fontFamily = FontFamily.Monospace,
+                    fontFamily = PlusJakartaSansFamily,
+                    letterSpacing = 0.5.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -282,8 +286,8 @@ fun DspAndEqScreen(
                 onValueChange = { DspStateHolder.setPreampGain(it) },
                 valueRange = -12f..12f,
                 colors = SliderDefaults.colors(
-                    thumbColor = Color(0xFF34D399),
-                    activeTrackColor = Color(0xFF34D399)
+                    thumbColor = AcousticPebbleColors.PrimaryContainer,
+                    activeTrackColor = AcousticPebbleColors.PrimaryContainer
                 )
             )
 
@@ -299,9 +303,10 @@ fun DspAndEqScreen(
                 )
                 Text(
                     text = if (crossfadeSec <= 0.1f) "OFF (0.0 秒)" else String.format("%.1f 秒", crossfadeSec),
-                    color = Color(0xFFFBBF24),
+                    color = AcousticPebbleColors.Secondary,
                     fontSize = 12.sp,
-                    fontFamily = FontFamily.Monospace,
+                    fontFamily = PlusJakartaSansFamily,
+                    letterSpacing = 0.5.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -310,8 +315,8 @@ fun DspAndEqScreen(
                 onValueChange = { viewModel.setCrossfadeSeconds(it) },
                 valueRange = 0f..12f,
                 colors = SliderDefaults.colors(
-                    thumbColor = Color(0xFFFBBF24),
-                    activeTrackColor = Color(0xFFFBBF24)
+                    thumbColor = AcousticPebbleColors.Secondary,
+                    activeTrackColor = AcousticPebbleColors.Secondary
                 )
             )
         }
@@ -385,7 +390,7 @@ fun DspAndEqScreen(
                 Column {
                     Text(
                         text = "10バンド・グラフィックイコライザー",
-                        color = Color.White,
+                        color = AcousticPebbleColors.OnSurface,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -410,7 +415,10 @@ fun DspAndEqScreen(
                     Switch(
                         checked = eqEnabled,
                         onCheckedChange = { DspStateHolder.setEqualizerEnabled(it) },
-                        colors = SwitchDefaults.colors(checkedThumbColor = AcousticPebbleColors.PrimaryContainer)
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = AcousticPebbleColors.Primary,
+                            checkedTrackColor = AcousticPebbleColors.PrimaryContainer.copy(alpha = 0.45f)
+                        )
                     )
                 }
             }
@@ -441,7 +449,7 @@ fun DspAndEqScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(10.dp))
-                    .background(Color(0xFF020617))
+                    .background(AcousticPebbleColors.SurfaceContainerLowest)
                     .border(1.dp, AcousticPebbleColors.SurfaceContainerHigh, RoundedCornerShape(10.dp))
                     .padding(vertical = 10.dp, horizontal = 4.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
@@ -457,9 +465,10 @@ fun DspAndEqScreen(
                             text = String.format("%+.0f", gainDb),
                             color = if (gainDb > 0.1f) AcousticPebbleColors.PrimaryContainer
                             else if (gainDb < -0.1f) AcousticPebbleColors.Error
-                            else Color(0xFF64748B),
+                            else AcousticPebbleColors.OnSurfaceVariant,
                             fontSize = 9.sp,
-                            fontFamily = FontFamily.Monospace,
+                            fontFamily = PlusJakartaSansFamily,
+                            letterSpacing = 0.5.sp,
                             textAlign = TextAlign.Center
                         )
 
@@ -480,7 +489,8 @@ fun DspAndEqScreen(
                             text = TenBandEqualizer.BAND_LABELS[i],
                             color = AcousticPebbleColors.OnSurface,
                             fontSize = 9.sp,
-                            fontFamily = FontFamily.Monospace,
+                            fontFamily = PlusJakartaSansFamily,
+                            letterSpacing = 0.5.sp,
                             fontWeight = FontWeight.SemiBold,
                             textAlign = TextAlign.Center
                         )
@@ -569,7 +579,7 @@ private fun CollapsibleDspGroup(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = title,
-                        color = if (enabled) Color.White else AcousticPebbleColors.OnSurfaceVariant,
+                        color = if (enabled) AcousticPebbleColors.OnSurface else AcousticPebbleColors.OnSurfaceVariant,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -587,7 +597,10 @@ private fun CollapsibleDspGroup(
             Switch(
                 checked = enabled,
                 onCheckedChange = onToggle,
-                colors = SwitchDefaults.colors(checkedThumbColor = AcousticPebbleColors.PrimaryContainer)
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = AcousticPebbleColors.Primary,
+                    checkedTrackColor = AcousticPebbleColors.PrimaryContainer.copy(alpha = 0.45f)
+                )
             )
         }
         AnimatedVisibility(visible = expanded) {

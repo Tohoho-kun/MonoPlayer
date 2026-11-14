@@ -44,13 +44,13 @@ fun MultiPlaylistAssignDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = Color(0xFF0A0D18),
-        titleContentColor = Color.White,
-        textContentColor = Color(0xFFE2E8F0),
+        containerColor = AcousticPebbleColors.SurfaceContainerHigh,
+        titleContentColor = AcousticPebbleColors.OnSurface,
+        textContentColor = AcousticPebbleColors.OnSurface,
         title = {
             Column {
                 Text("プレイリストへ追加・複数登録", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                Text(track.title, fontSize = 12.sp, color = Color(0xFF38BDF8))
+                Text(track.title, fontSize = 12.sp, color = AcousticPebbleColors.PrimaryContainer)
             }
         },
         text = {
@@ -61,7 +61,7 @@ fun MultiPlaylistAssignDialog(
                 Text(
                     text = "登録したいプレイリストにチェックを入れてください（複数選択可）:",
                     fontSize = 12.sp,
-                    color = Color(0xFF94A3B8)
+                    color = AcousticPebbleColors.OnSurfaceVariant
                 )
 
                 Column(
@@ -90,13 +90,13 @@ fun MultiPlaylistAssignDialog(
                             )
                             Column {
                                 Text(pl.name, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
-                                Text("${pl.trackIds.size} 曲", fontSize = 11.sp, color = Color(0xFF64748B))
+                                Text("${pl.trackIds.size} 曲", fontSize = 11.sp, color = AcousticPebbleColors.OnSurfaceVariant)
                             }
                         }
                     }
                 }
 
-                HorizontalDivider(color = Color(0xFF1E293B))
+                HorizontalDivider(color = AcousticPebbleColors.OutlineVariant.copy(alpha = 0.5f))
 
                 // Quick inline new playlist creation
                 Row(
@@ -125,13 +125,19 @@ fun MultiPlaylistAssignDialog(
             }
         },
         confirmButton = {
-            Button(onClick = { onSaveMembership(selectedIds.toSet()) }) {
+            Button(
+                onClick = { onSaveMembership(selectedIds.toSet()) },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = AcousticPebbleColors.PrimaryContainer,
+                    contentColor = AcousticPebbleColors.OnPrimary
+                )
+            ) {
                 Text("保存 (${selectedIds.size}件)")
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("キャンセル")
+                Text("キャンセル", color = AcousticPebbleColors.OnSurfaceVariant)
             }
         }
     )
@@ -151,16 +157,16 @@ fun DisplayCustomizeDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = Color(0xFF0A0D18),
-        titleContentColor = Color.White,
-        textContentColor = Color(0xFFE2E8F0),
+        containerColor = AcousticPebbleColors.SurfaceContainerHigh,
+        titleContentColor = AcousticPebbleColors.OnSurface,
+        textContentColor = AcousticPebbleColors.OnSurface,
         title = {
             Column {
                 Text("CLUB STAGE 表示項目カスタマイズ", fontSize = 16.sp, fontWeight = FontWeight.ExtraBold)
                 Text(
                     text = "メインステージ演出（二者択一）と情報パネルの表示設定",
                     fontSize = 11.sp,
-                    color = Color(0xFFD4AF37)
+                    color = AcousticPebbleColors.PrimaryContainer
                 )
             }
         },
@@ -170,7 +176,7 @@ fun DisplayCustomizeDialog(
                     text = "メインステージ表示（二者択一）",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF38BDF8)
+                    color = AcousticPebbleColors.Primary
                 )
 
                 Row(
@@ -183,11 +189,11 @@ fun DisplayCustomizeDialog(
                             .weight(1f)
                             .clip(RoundedCornerShape(10.dp))
                             .background(
-                                if (isVisualizer) Color(0xFF1E1B4B) else Color(0xFF0F172A)
+                                if (isVisualizer) AcousticPebbleColors.SurfaceContainerHighest else AcousticPebbleColors.SurfaceContainerLow
                             )
                             .border(
                                 width = if (isVisualizer) 1.5.dp else 1.dp,
-                                color = if (isVisualizer) Color(0xFFD4AF37) else Color(0xFF1E293B),
+                                color = if (isVisualizer) AcousticPebbleColors.PrimaryContainer else AcousticPebbleColors.OutlineVariant,
                                 shape = RoundedCornerShape(10.dp)
                             )
                             .clickable {
@@ -200,14 +206,14 @@ fun DisplayCustomizeDialog(
                             Icon(
                                 imageVector = Icons.Default.AutoAwesome,
                                 contentDescription = null,
-                                tint = if (isVisualizer) Color(0xFFD4AF37) else Color(0xFF64748B)
+                                tint = if (isVisualizer) AcousticPebbleColors.PrimaryContainer else AcousticPebbleColors.OnSurfaceVariant
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = "ヴィジュアライザー",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (isVisualizer) Color.White else Color(0xFF94A3B8)
+                                color = if (isVisualizer) AcousticPebbleColors.OnSurface else AcousticPebbleColors.OnSurfaceVariant
                             )
                         }
                     }
@@ -218,11 +224,11 @@ fun DisplayCustomizeDialog(
                             .weight(1f)
                             .clip(RoundedCornerShape(10.dp))
                             .background(
-                                if (!isVisualizer) Color(0xFF1E1B4B) else Color(0xFF0F172A)
+                                if (!isVisualizer) AcousticPebbleColors.SurfaceContainerHighest else AcousticPebbleColors.SurfaceContainerLow
                             )
                             .border(
                                 width = if (!isVisualizer) 1.5.dp else 1.dp,
-                                color = if (!isVisualizer) Color(0xFFD4AF37) else Color(0xFF1E293B),
+                                color = if (!isVisualizer) AcousticPebbleColors.PrimaryContainer else AcousticPebbleColors.OutlineVariant,
                                 shape = RoundedCornerShape(10.dp)
                             )
                             .clickable {
@@ -235,20 +241,20 @@ fun DisplayCustomizeDialog(
                             Icon(
                                 imageVector = Icons.Default.Album,
                                 contentDescription = null,
-                                tint = if (!isVisualizer) Color(0xFFD4AF37) else Color(0xFF64748B)
+                                tint = if (!isVisualizer) AcousticPebbleColors.PrimaryContainer else AcousticPebbleColors.OnSurfaceVariant
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = "ジャケット表示",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (!isVisualizer) Color.White else Color(0xFF94A3B8)
+                                color = if (!isVisualizer) AcousticPebbleColors.OnSurface else AcousticPebbleColors.OnSurfaceVariant
                             )
                         }
                     }
                 }
 
-                HorizontalDivider(color = Color(0xFF1E293B))
+                HorizontalDivider(color = AcousticPebbleColors.OutlineVariant.copy(alpha = 0.5f))
 
                 CustomizeToggleRow(
                     label = "アーティスト名・アルバム名 (名寄せ表示)",
@@ -280,7 +286,10 @@ fun DisplayCustomizeDialog(
         confirmButton = {
             Button(
                 onClick = onDismiss,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD4AF37), contentColor = Color(0xFF05070E))
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = AcousticPebbleColors.PrimaryContainer,
+                    contentColor = AcousticPebbleColors.OnPrimary
+                )
             ) {
                 Text("完了", fontWeight = FontWeight.Bold)
             }
@@ -307,8 +316,8 @@ private fun CustomizeToggleRow(
             checked = checked,
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
-                checkedThumbColor = Color(0xFFD4AF37),
-                checkedTrackColor = Color(0xFF38BDF8).copy(alpha = 0.35f)
+                checkedThumbColor = AcousticPebbleColors.Primary,
+                checkedTrackColor = AcousticPebbleColors.PrimaryContainer.copy(alpha = 0.45f)
             )
         )
     }

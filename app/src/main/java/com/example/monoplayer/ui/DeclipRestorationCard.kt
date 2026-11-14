@@ -17,7 +17,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -31,15 +30,15 @@ fun DeclipRestorationCard(
     telemetry: VisualizerTelemetry,
     onConfigChange: (DeclipConfig) -> Unit
 ) {
-    val activeColor = Color(0xFFFF5252) // Vibrant crest restoration coral/red
-    val cyanAccent = Color(0xFF00F5D4)
+    val activeColor = AcousticPebbleColors.Error
+    val cyanAccent = AcousticPebbleColors.PrimaryContainer
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .background(Color(0xFF0F172A))
-            .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(14.dp))
+            .background(AcousticPebbleColors.SurfaceContainerLow)
+            .border(1.dp, AcousticPebbleColors.SurfaceContainerHigh, RoundedCornerShape(14.dp))
             .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
@@ -57,19 +56,19 @@ fun DeclipRestorationCard(
                 Icon(
                     imageVector = Icons.Default.AutoFixHigh,
                     contentDescription = null,
-                    tint = if (config.enabled) activeColor else Color(0xFF64748B),
+                    tint = if (config.enabled) activeColor else AcousticPebbleColors.OnSurfaceVariant,
                     modifier = Modifier.size(20.dp)
                 )
                 Column {
                     Text(
                         text = "クリッピング検出 & 波形修復 (De-clipping)",
-                        color = Color.White,
+                        color = AcousticPebbleColors.OnSurface,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = "0dB超過 + 音量低下マスタリングの平坦ピーク & プチプチ音をエルミート復元",
-                        color = Color(0xFF94A3B8),
+                        color = AcousticPebbleColors.OnSurfaceVariant,
                         fontSize = 10.sp
                     )
                 }
@@ -80,7 +79,7 @@ fun DeclipRestorationCard(
                 onCheckedChange = { onConfigChange(config.copy(enabled = it)) },
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = activeColor,
-                    checkedTrackColor = activeColor.copy(alpha = 0.35f)
+                    checkedTrackColor = AcousticPebbleColors.ErrorContainer
                 )
             )
         }
@@ -90,8 +89,8 @@ fun DeclipRestorationCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(8.dp))
-                .background(Color(0xFF020617))
-                .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(8.dp))
+                .background(AcousticPebbleColors.SurfaceContainerLowest)
+                .border(1.dp, AcousticPebbleColors.SurfaceContainerHigh, RoundedCornerShape(8.dp))
                 .padding(horizontal = 10.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
@@ -100,15 +99,16 @@ fun DeclipRestorationCard(
             Column {
                 Text(
                     text = "修復イベント数",
-                    color = Color(0xFF64748B),
+                    color = AcousticPebbleColors.OnSurfaceVariant,
                     fontSize = 9.sp,
                     fontWeight = FontWeight.Medium
                 )
                 Text(
                     text = "${telemetry.declipEventsTotal} 回",
-                    color = if (telemetry.declipEventsTotal > 0) cyanAccent else Color(0xFF94A3B8),
+                    color = if (telemetry.declipEventsTotal > 0) cyanAccent else AcousticPebbleColors.OnSurfaceVariant,
                     fontSize = 12.sp,
-                    fontFamily = FontFamily.Monospace,
+                    fontFamily = PlusJakartaSansFamily,
+                    letterSpacing = 0.5.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -117,15 +117,16 @@ fun DeclipRestorationCard(
             Column {
                 Text(
                     text = "検出クリップ天井",
-                    color = Color(0xFF64748B),
+                    color = AcousticPebbleColors.OnSurfaceVariant,
                     fontSize = 9.sp,
                     fontWeight = FontWeight.Medium
                 )
                 Text(
                     text = String.format("%.1f dBFS", telemetry.declipThresholdDb),
-                    color = if (telemetry.declipThresholdDb < -0.5f) Color(0xFFFBBF24) else Color(0xFF94A3B8),
+                    color = if (telemetry.declipThresholdDb < -0.5f) AcousticPebbleColors.TertiaryContainer else AcousticPebbleColors.OnSurfaceVariant,
                     fontSize = 12.sp,
-                    fontFamily = FontFamily.Monospace,
+                    fontFamily = PlusJakartaSansFamily,
+                    letterSpacing = 0.5.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -134,15 +135,16 @@ fun DeclipRestorationCard(
             Column {
                 Text(
                     text = "復元ピーク振幅",
-                    color = Color(0xFF64748B),
+                    color = AcousticPebbleColors.OnSurfaceVariant,
                     fontSize = 9.sp,
                     fontWeight = FontWeight.Medium
                 )
                 Text(
                     text = String.format("%.2f", telemetry.declipMaxPeak),
-                    color = if (telemetry.declipMaxPeak > 1.0f) activeColor else Color(0xFF94A3B8),
+                    color = if (telemetry.declipMaxPeak > 1.0f) activeColor else AcousticPebbleColors.OnSurfaceVariant,
                     fontSize = 12.sp,
-                    fontFamily = FontFamily.Monospace,
+                    fontFamily = PlusJakartaSansFamily,
+                    letterSpacing = 0.5.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -156,15 +158,16 @@ fun DeclipRestorationCard(
             ) {
                 Text(
                     text = "リアルタイム・クリップ検出強度",
-                    color = Color(0xFFE2E8F0),
+                    color = AcousticPebbleColors.OnSurface,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Medium
                 )
                 Text(
                     text = "${(telemetry.declipRate * 100f).roundToInt()}%",
-                    color = if (telemetry.declipRate > 0.05f) activeColor else Color(0xFF64748B),
+                    color = if (telemetry.declipRate > 0.05f) activeColor else AcousticPebbleColors.OnSurfaceVariant,
                     fontSize = 11.sp,
-                    fontFamily = FontFamily.Monospace,
+                    fontFamily = PlusJakartaSansFamily,
+                    letterSpacing = 0.5.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -174,13 +177,13 @@ fun DeclipRestorationCard(
                     .fillMaxWidth()
                     .height(6.dp)
                     .clip(RoundedCornerShape(3.dp))
-                    .background(Color(0xFF1E293B))
+                    .background(AcousticPebbleColors.SurfaceContainerHigh)
             ) {
                 val fillRatio = telemetry.declipRate.coerceIn(0f, 1f)
                 if (fillRatio > 0f) {
                     drawRoundRect(
                         brush = Brush.horizontalGradient(
-                            listOf(Color(0xFF00F5D4), Color(0xFFFBBF24), Color(0xFFFF5252))
+                            listOf(AcousticPebbleColors.PrimaryContainer, AcousticPebbleColors.TertiaryContainer, AcousticPebbleColors.Error)
                         ),
                         topLeft = Offset.Zero,
                         size = Size(size.width * fillRatio, size.height),
@@ -198,14 +201,15 @@ fun DeclipRestorationCard(
             ) {
                 Text(
                     text = "検出感度 (音量低下クリップ・微小プチプチ検知)",
-                    color = Color(0xFFCBD5E1),
+                    color = AcousticPebbleColors.OnSurface,
                     fontSize = 11.sp
                 )
                 Text(
                     text = "${(config.sensitivity * 100f).roundToInt()}%",
                     color = activeColor,
                     fontSize = 11.sp,
-                    fontFamily = FontFamily.Monospace,
+                    fontFamily = PlusJakartaSansFamily,
+                    letterSpacing = 0.5.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -217,8 +221,8 @@ fun DeclipRestorationCard(
                 colors = SliderDefaults.colors(
                     thumbColor = activeColor,
                     activeTrackColor = activeColor,
-                    disabledThumbColor = Color(0xFF475569),
-                    disabledActiveTrackColor = Color(0xFF334155)
+                    disabledThumbColor = AcousticPebbleColors.Outline,
+                    disabledActiveTrackColor = AcousticPebbleColors.OutlineVariant
                 )
             )
         }
@@ -231,14 +235,15 @@ fun DeclipRestorationCard(
             ) {
                 Text(
                     text = "山頂復元ヘッドルーム比率 (Hermite Crest Ratio)",
-                    color = Color(0xFFCBD5E1),
+                    color = AcousticPebbleColors.OnSurface,
                     fontSize = 11.sp
                 )
                 Text(
                     text = String.format("x%.2f", config.maxReconstructRatio),
-                    color = Color(0xFF38BDF8),
+                    color = cyanAccent,
                     fontSize = 11.sp,
-                    fontFamily = FontFamily.Monospace,
+                    fontFamily = PlusJakartaSansFamily,
+                    letterSpacing = 0.5.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -248,10 +253,10 @@ fun DeclipRestorationCard(
                 valueRange = 1.10f..2.00f,
                 enabled = config.enabled,
                 colors = SliderDefaults.colors(
-                    thumbColor = Color(0xFF38BDF8),
-                    activeTrackColor = Color(0xFF38BDF8),
-                    disabledThumbColor = Color(0xFF475569),
-                    disabledActiveTrackColor = Color(0xFF334155)
+                    thumbColor = cyanAccent,
+                    activeTrackColor = cyanAccent,
+                    disabledThumbColor = AcousticPebbleColors.Outline,
+                    disabledActiveTrackColor = AcousticPebbleColors.OutlineVariant
                 )
             )
         }

@@ -33,7 +33,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -68,8 +67,8 @@ fun LoudnessNormalizerCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
-            .background(Color(0xFF0F172A))
-            .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(14.dp))
+            .background(AcousticPebbleColors.SurfaceContainerLow)
+            .border(1.dp, AcousticPebbleColors.SurfaceContainerHigh, RoundedCornerShape(14.dp))
             .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
@@ -81,17 +80,17 @@ fun LoudnessNormalizerCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = "リアルタイム聴覚ラウドネス・ノーマライザー",
-                    color = Color.White,
+                    color = AcousticPebbleColors.OnSurface,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = "ITU-R BS.1770-4 K-Weighting 即時解析 / 43ms先読みピーク保護",
-                    color = Color(0xFF94A3B8),
+                    color = AcousticPebbleColors.OnSurfaceVariant,
                     fontSize = 10.sp
                 )
             }
-            val gateColor = if (telemetry.loudnessGateFrozen) Color(0xFFFBBF24) else Color(0xFF00F5D4)
+            val gateColor = if (telemetry.loudnessGateFrozen) AcousticPebbleColors.TertiaryContainer else AcousticPebbleColors.PrimaryContainer
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(6.dp))
@@ -104,7 +103,8 @@ fun LoudnessNormalizerCard(
                     color = gateColor,
                     fontSize = 9.sp,
                     fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily.Monospace
+                    fontFamily = PlusJakartaSansFamily,
+                    letterSpacing = 0.5.sp
                 )
             }
         }
@@ -117,9 +117,9 @@ fun LoudnessNormalizerCard(
             LoudnessMode.entries.forEach { mode ->
                 val selected = config.mode == mode
                 val accent = when (mode) {
-                    LoudnessMode.OFF -> Color(0xFF64748B)
-                    LoudnessMode.NORMAL_HIFI -> Color(0xFF00F5D4)
-                    LoudnessMode.NOISY_CAR -> Color(0xFFD4AF37)
+                    LoudnessMode.OFF -> AcousticPebbleColors.OnSurfaceVariant
+                    LoudnessMode.NORMAL_HIFI -> AcousticPebbleColors.PrimaryContainer
+                    LoudnessMode.NOISY_CAR -> AcousticPebbleColors.TertiaryContainer
                 }
                 val icon = when (mode) {
                     LoudnessMode.OFF -> Icons.Default.PowerSettingsNew
@@ -130,20 +130,21 @@ fun LoudnessNormalizerCard(
                     modifier = Modifier
                         .weight(1f)
                         .clip(RoundedCornerShape(10.dp))
-                        .background(if (selected) accent.copy(alpha = 0.18f) else Color(0xFF020617))
-                        .border(1.2.dp, if (selected) accent else Color(0xFF1E293B), RoundedCornerShape(10.dp))
+                        .background(if (selected) accent.copy(alpha = 0.18f) else AcousticPebbleColors.SurfaceContainerLowest)
+                        .border(1.2.dp, if (selected) accent else AcousticPebbleColors.SurfaceContainerHigh, RoundedCornerShape(10.dp))
                         .clickable { onConfigChange(config.copy(mode = mode)) }
                         .padding(vertical = 8.dp, horizontal = 6.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Icon(icon, contentDescription = mode.title, tint = if (selected) accent else Color(0xFF94A3B8), modifier = Modifier.size(18.dp))
+                    Icon(icon, contentDescription = mode.title, tint = if (selected) accent else AcousticPebbleColors.OnSurfaceVariant, modifier = Modifier.size(18.dp))
                     Text(
                         text = mode.shortBadge,
-                        color = if (selected) accent else Color(0xFFCBD5E1),
+                        color = if (selected) accent else AcousticPebbleColors.OnSurface,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace
+                        fontFamily = PlusJakartaSansFamily,
+                        letterSpacing = 0.5.sp
                     )
                 }
             }
@@ -151,7 +152,7 @@ fun LoudnessNormalizerCard(
 
         Text(
             text = config.mode.subtitle,
-            color = Color(0xFFCBD5E1),
+            color = AcousticPebbleColors.OnSurfaceVariant,
             fontSize = 11.sp
         )
 
@@ -160,8 +161,8 @@ fun LoudnessNormalizerCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(10.dp))
-                .background(Color(0xFF020617))
-                .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(10.dp))
+                .background(AcousticPebbleColors.SurfaceContainerLowest)
+                .border(1.dp, AcousticPebbleColors.SurfaceContainerHigh, RoundedCornerShape(10.dp))
                 .padding(10.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
@@ -171,24 +172,26 @@ fun LoudnessNormalizerCard(
             ) {
                 Text(
                     text = "計測: ${"%.1f".format(telemetry.measuredLufs)} LUFS",
-                    color = Color(0xFF38BDF8),
+                    color = AcousticPebbleColors.Primary,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily.Monospace
+                    fontFamily = PlusJakartaSansFamily,
+                    letterSpacing = 0.5.sp
                 )
                 Text(
                     text = "補正ゲイン: ${"%+.1f".format(telemetry.loudnessGainDb)} dB",
-                    color = if (config.mode == LoudnessMode.NOISY_CAR) Color(0xFFD4AF37) else Color(0xFF00F5D4),
+                    color = if (config.mode == LoudnessMode.NOISY_CAR) AcousticPebbleColors.TertiaryContainer else AcousticPebbleColors.PrimaryContainer,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily.Monospace
+                    fontFamily = PlusJakartaSansFamily,
+                    letterSpacing = 0.5.sp
                 )
             }
 
             Canvas(modifier = Modifier.fillMaxWidth().height(12.dp)) {
                 val midX = size.width * 0.5f
                 drawRoundRect(
-                    color = Color(0xFF1E293B),
+                    color = AcousticPebbleColors.SurfaceContainerHigh,
                     size = size,
                     cornerRadius = CornerRadius(6f, 6f)
                 )
@@ -196,7 +199,7 @@ fun LoudnessNormalizerCard(
                 if (gainFrac >= 0f) {
                     val barW = gainFrac * (size.width * 0.5f)
                     drawRoundRect(
-                        color = Color(0xFF00F5D4),
+                        color = AcousticPebbleColors.PrimaryContainer,
                         topLeft = Offset(midX, 0f),
                         size = Size(barW, size.height),
                         cornerRadius = CornerRadius(6f, 6f)
@@ -204,21 +207,22 @@ fun LoudnessNormalizerCard(
                 } else {
                     val barW = -gainFrac * (size.width * 0.5f)
                     drawRoundRect(
-                        color = Color(0xFFFF2A85),
+                        color = AcousticPebbleColors.Error,
                         topLeft = Offset(midX - barW, 0f),
                         size = Size(barW, size.height),
                         cornerRadius = CornerRadius(6f, 6f)
                     )
                 }
-                drawLine(Color.White.copy(alpha = 0.7f), Offset(midX, 0f), Offset(midX, size.height), strokeWidth = 2f)
+                drawLine(AcousticPebbleColors.OnSurface.copy(alpha = 0.6f), Offset(midX, 0f), Offset(midX, size.height), strokeWidth = 2f)
             }
 
             if (config.mode == LoudnessMode.NOISY_CAR) {
                 Text(
                     text = "車内ロードノイズ補償: 低域パンチ補強 ON  •  声帯域サポート +${"%.1f".format(telemetry.carClarityBoostDb)} dB (2.6kHz)",
-                    color = Color(0xFFD4AF37),
+                    color = AcousticPebbleColors.TertiaryContainer,
                     fontSize = 10.sp,
-                    fontFamily = FontFamily.Monospace
+                    fontFamily = PlusJakartaSansFamily,
+                    letterSpacing = 0.5.sp
                 )
             }
         }
@@ -226,31 +230,31 @@ fun LoudnessNormalizerCard(
         // Mode-specific Controls
         if (config.mode == LoudnessMode.NORMAL_HIFI) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("目標ラウドネス (Hi-Fi 基準)", color = Color(0xFFCBD5E1), fontSize = 12.sp)
-                Text("${"%.1f".format(config.normalTargetLufs)} LUFS", color = Color(0xFF00F5D4), fontSize = 12.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
+                Text("目標ラウドネス (Hi-Fi 基準)", color = AcousticPebbleColors.OnSurface, fontSize = 12.sp)
+                Text("${"%.1f".format(config.normalTargetLufs)} LUFS", color = AcousticPebbleColors.PrimaryContainer, fontSize = 12.sp, fontFamily = PlusJakartaSansFamily, letterSpacing = 0.5.sp, fontWeight = FontWeight.Bold)
             }
             Slider(
                 value = config.normalTargetLufs,
                 onValueChange = { onConfigChange(config.copy(normalTargetLufs = it)) },
                 valueRange = -20f..-9f,
-                colors = SliderDefaults.colors(thumbColor = Color(0xFF00F5D4), activeTrackColor = Color(0xFF00F5D4))
+                colors = SliderDefaults.colors(thumbColor = AcousticPebbleColors.PrimaryContainer, activeTrackColor = AcousticPebbleColors.PrimaryContainer)
             )
         } else if (config.mode == LoudnessMode.NOISY_CAR) {
             // Target LUFS (Idle Headroom Baseline) for Car Mode
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("車内ベース音量 (停車基準・余裕確保)", color = Color(0xFFCBD5E1), fontSize = 12.sp)
-                Text("${"%.1f".format(config.carTargetLufs)} LUFS", color = Color(0xFFD4AF37), fontSize = 12.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
+                Text("車内ベース音量 (停車基準・余裕確保)", color = AcousticPebbleColors.OnSurface, fontSize = 12.sp)
+                Text("${"%.1f".format(config.carTargetLufs)} LUFS", color = AcousticPebbleColors.TertiaryContainer, fontSize = 12.sp, fontFamily = PlusJakartaSansFamily, letterSpacing = 0.5.sp, fontWeight = FontWeight.Bold)
             }
             Text(
                 text = "車側の音量を大きめにし基準値を低く保つほど、車速連動アップ幅(最大+8.8dB)を音割れなく広く使えます",
-                color = Color(0xFF64748B),
+                color = AcousticPebbleColors.OnSurfaceVariant,
                 fontSize = 9.sp
             )
             Slider(
                 value = config.carTargetLufs.coerceIn(-24f, -8f),
                 onValueChange = { onConfigChange(config.copy(carTargetLufs = it)) },
                 valueRange = -24f..-8f,
-                colors = SliderDefaults.colors(thumbColor = Color(0xFFD4AF37), activeTrackColor = Color(0xFFD4AF37))
+                colors = SliderDefaults.colors(thumbColor = AcousticPebbleColors.TertiaryContainer, activeTrackColor = AcousticPebbleColors.TertiaryContainer)
             )
 
             // Dedicated Vehicle Speed Compensation Panel
@@ -258,8 +262,8 @@ fun LoudnessNormalizerCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(10.dp))
-                    .background(Color(0xFF020617))
-                    .border(1.dp, Color(0xFFD4AF37).copy(alpha = 0.35f), RoundedCornerShape(10.dp))
+                    .background(AcousticPebbleColors.SurfaceContainerLowest)
+                    .border(1.dp, AcousticPebbleColors.OutlineVariant.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
                     .padding(10.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -277,19 +281,19 @@ fun LoudnessNormalizerCard(
                         Icon(
                             imageVector = Icons.Default.Speed,
                             contentDescription = null,
-                            tint = if (config.autoSpeedEnabled) Color(0xFFD4AF37) else Color(0xFF64748B),
+                            tint = if (config.autoSpeedEnabled) AcousticPebbleColors.TertiaryContainer else AcousticPebbleColors.OnSurfaceVariant,
                             modifier = Modifier.size(18.dp)
                         )
                         Column {
                             Text(
                                 text = "車速連動自動コンペンセーション",
-                                color = Color.White,
+                                color = AcousticPebbleColors.OnSurface,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
                                 text = "GPS車速 + トンネル内加速度推測で強度を自動追従",
-                                color = Color(0xFF94A3B8),
+                                color = AcousticPebbleColors.OnSurfaceVariant,
                                 fontSize = 10.sp
                             )
                         }
@@ -314,8 +318,8 @@ fun LoudnessNormalizerCard(
                             }
                         },
                         colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color(0xFFD4AF37),
-                            checkedTrackColor = Color(0xFFD4AF37).copy(alpha = 0.35f)
+                            checkedThumbColor = AcousticPebbleColors.Primary,
+                            checkedTrackColor = AcousticPebbleColors.PrimaryContainer.copy(alpha = 0.45f)
                         )
                     )
                 }
@@ -326,8 +330,8 @@ fun LoudnessNormalizerCard(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFF7F1D1D).copy(alpha = 0.35f))
-                            .border(1.dp, Color(0xFFEF4444).copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+                            .background(AcousticPebbleColors.ErrorContainer.copy(alpha = 0.5f))
+                            .border(1.dp, AcousticPebbleColors.Error.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
                             .padding(8.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
@@ -340,12 +344,12 @@ fun LoudnessNormalizerCard(
                             Icon(
                                 imageVector = Icons.Default.Warning,
                                 contentDescription = null,
-                                tint = Color(0xFFFCA5A5),
+                                tint = AcousticPebbleColors.Error,
                                 modifier = Modifier.size(16.dp)
                             )
                             Text(
                                 text = "車速取得には位置情報の許可が必要です",
-                                color = Color(0xFFFECACA),
+                                color = AcousticPebbleColors.OnErrorContainer,
                                 fontSize = 11.sp
                             )
                         }
@@ -359,7 +363,10 @@ fun LoudnessNormalizerCard(
                                     )
                                 )
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF4444)),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = AcousticPebbleColors.Error,
+                                contentColor = AcousticPebbleColors.OnError
+                            ),
                             contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
                             modifier = Modifier.height(30.dp)
                         ) {
@@ -375,10 +382,10 @@ fun LoudnessNormalizerCard(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(6.dp))
-                            .background(if (isHandheld) Color(0xFF450A0A).copy(alpha = 0.55f) else Color(0xFF0F172A))
+                            .background(if (isHandheld) AcousticPebbleColors.ErrorContainer.copy(alpha = 0.55f) else AcousticPebbleColors.SurfaceContainerLow)
                             .border(
                                 width = if (isHandheld) 1.dp else 0.dp,
-                                color = if (isHandheld) Color(0xFFFF5252).copy(alpha = 0.65f) else Color.Transparent,
+                                color = if (isHandheld) AcousticPebbleColors.Error.copy(alpha = 0.65f) else Color.Transparent,
                                 shape = RoundedCornerShape(6.dp)
                             )
                             .padding(horizontal = 8.dp, vertical = 6.dp),
@@ -386,26 +393,27 @@ fun LoudnessNormalizerCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text("検知車速", color = Color(0xFF64748B), fontSize = 9.sp)
+                            Text("検知車速", color = AcousticPebbleColors.OnSurfaceVariant, fontSize = 9.sp)
                             Text(
                                 text = if (isHandheld) "0.0 km/h" else "${"%.1f".format(telemetry.detectedSpeedKmh)} km/h",
-                                color = if (isHandheld) Color(0xFFFF8A80) else Color(0xFF00F5D4),
+                                color = if (isHandheld) AcousticPebbleColors.Error else AcousticPebbleColors.PrimaryContainer,
                                 fontSize = 12.sp,
-                                fontFamily = FontFamily.Monospace,
+                                fontFamily = PlusJakartaSansFamily,
+                                letterSpacing = 0.5.sp,
                                 fontWeight = FontWeight.Bold
                             )
                         }
 
                         Column {
-                            Text("測位ソース", color = Color(0xFF64748B), fontSize = 9.sp)
+                            Text("測位ソース", color = AcousticPebbleColors.OnSurfaceVariant, fontSize = 9.sp)
                             Text(
                                 text = telemetry.speedSource.label,
                                 color = when (telemetry.speedSource) {
-                                    SpeedTrackingSource.GPS -> Color(0xFF38BDF8)
-                                    SpeedTrackingSource.TUNNEL_IMU -> Color(0xFFFBBF24)
-                                    SpeedTrackingSource.STOPPED -> Color(0xFF94A3B8)
-                                    SpeedTrackingSource.HANDHELD -> Color(0xFFFF5252)
-                                    SpeedTrackingSource.OFF -> Color(0xFF64748B)
+                                    SpeedTrackingSource.GPS -> AcousticPebbleColors.PrimaryContainer
+                                    SpeedTrackingSource.TUNNEL_IMU -> AcousticPebbleColors.TertiaryContainer
+                                    SpeedTrackingSource.STOPPED -> AcousticPebbleColors.Secondary
+                                    SpeedTrackingSource.HANDHELD -> AcousticPebbleColors.Error
+                                    SpeedTrackingSource.OFF -> AcousticPebbleColors.OnSurfaceVariant
                                 },
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold
@@ -413,7 +421,7 @@ fun LoudnessNormalizerCard(
                             if (!isHandheld && telemetry.speedSource != SpeedTrackingSource.OFF) {
                                 Text(
                                     text = if (telemetry.carForwardCalibrated) "進行軸ロック" else "進行軸学習中",
-                                    color = if (telemetry.carForwardCalibrated) Color(0xFF10B981) else Color(0xFFFBBF24),
+                                    color = if (telemetry.carForwardCalibrated) AcousticPebbleColors.PrimaryContainer else AcousticPebbleColors.TertiaryContainer,
                                     fontSize = 8.sp,
                                     fontWeight = FontWeight.SemiBold
                                 )
@@ -421,13 +429,14 @@ fun LoudnessNormalizerCard(
                         }
 
                         Column {
-                            Text("連動補正 / 車速ゲイン", color = Color(0xFF64748B), fontSize = 9.sp)
+                            Text("連動補正 / 車速ゲイン", color = AcousticPebbleColors.OnSurfaceVariant, fontSize = 9.sp)
                             val effectiveIntensity = config.carCabinIntensity
                             Text(
                                 text = "${(effectiveIntensity * 100).toInt()}% (+${"%.1f".format(effectiveIntensity * 4.4f)} dB)",
-                                color = if (isHandheld) Color(0xFF94A3B8) else Color(0xFFD4AF37),
+                                color = if (isHandheld) AcousticPebbleColors.OnSurfaceVariant else AcousticPebbleColors.TertiaryContainer,
                                 fontSize = 11.sp,
-                                fontFamily = FontFamily.Monospace,
+                                fontFamily = PlusJakartaSansFamily,
+                                letterSpacing = 0.5.sp,
                                 fontWeight = FontWeight.Bold
                             )
                         }
@@ -438,8 +447,8 @@ fun LoudnessNormalizerCard(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(6.dp))
-                                .background(Color(0xFFFF5252).copy(alpha = 0.14f))
-                                .border(1.dp, Color(0xFFFF5252).copy(alpha = 0.45f), RoundedCornerShape(6.dp))
+                                .background(AcousticPebbleColors.ErrorContainer.copy(alpha = 0.35f))
+                                .border(1.dp, AcousticPebbleColors.Error.copy(alpha = 0.5f), RoundedCornerShape(6.dp))
                                 .padding(horizontal = 8.dp, vertical = 5.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -447,12 +456,12 @@ fun LoudnessNormalizerCard(
                             Icon(
                                 imageVector = Icons.Default.Warning,
                                 contentDescription = null,
-                                tint = Color(0xFFFF8A80),
+                                tint = AcousticPebbleColors.Error,
                                 modifier = Modifier.size(14.dp)
                             )
                             Text(
                                 text = "手持ち検出中 • GPS一時停止 (固定で自動再開)",
-                                color = Color(0xFFFFCDD2),
+                                color = AcousticPebbleColors.OnErrorContainer,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.SemiBold
                             )
@@ -462,7 +471,7 @@ fun LoudnessNormalizerCard(
                     // Speed Compensation Factor Slider
                     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("音の増減係数 (車速連動感度)", color = Color(0xFFCBD5E1), fontSize = 11.sp)
+                            Text("音の増減係数 (車速連動感度)", color = AcousticPebbleColors.OnSurface, fontSize = 11.sp)
                             val factorLabel = when {
                                 config.speedCompensationFactor > 1.25f -> "アグレッシブ"
                                 config.speedCompensationFactor < 0.75f -> "マイルド"
@@ -470,34 +479,36 @@ fun LoudnessNormalizerCard(
                             }
                             Text(
                                 text = "x${"%.2f".format(config.speedCompensationFactor)} ($factorLabel)",
-                                color = Color(0xFFD4AF37),
+                                color = AcousticPebbleColors.TertiaryContainer,
                                 fontSize = 11.sp,
-                                fontFamily = FontFamily.Monospace,
+                                fontFamily = PlusJakartaSansFamily,
+                                letterSpacing = 0.5.sp,
                                 fontWeight = FontWeight.Bold
                             )
                         }
                         Text(
                             text = "標準(x1.00)で最大+4.4dB・最大(x2.00)で最大+8.8dBの車速ゲイン＋低域・明瞭度を増加",
-                            color = Color(0xFF64748B),
+                            color = AcousticPebbleColors.OnSurfaceVariant,
                             fontSize = 9.sp
                         )
                         Slider(
                             value = config.speedCompensationFactor,
                             onValueChange = { onConfigChange(config.copy(speedCompensationFactor = it)) },
                             valueRange = 0.2f..2.0f,
-                            colors = SliderDefaults.colors(thumbColor = Color(0xFFD4AF37), activeTrackColor = Color(0xFFD4AF37))
+                            colors = SliderDefaults.colors(thumbColor = AcousticPebbleColors.TertiaryContainer, activeTrackColor = AcousticPebbleColors.TertiaryContainer)
                         )
                     }
 
                     // Reference Speed Slider
                     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("基準巡航速度 (係数通りの最大補正に達する速度)", color = Color(0xFFCBD5E1), fontSize = 11.sp)
+                            Text("基準巡航速度 (係数通りの最大補正に達する速度)", color = AcousticPebbleColors.OnSurface, fontSize = 11.sp)
                             Text(
                                 text = "${config.speedReferenceKmh.toInt()} km/h",
-                                color = Color(0xFF38BDF8),
+                                color = AcousticPebbleColors.PrimaryContainer,
                                 fontSize = 11.sp,
-                                fontFamily = FontFamily.Monospace,
+                                fontFamily = PlusJakartaSansFamily,
+                                letterSpacing = 0.5.sp,
                                 fontWeight = FontWeight.Bold
                             )
                         }
@@ -505,19 +516,20 @@ fun LoudnessNormalizerCard(
                             value = config.speedReferenceKmh,
                             onValueChange = { onConfigChange(config.copy(speedReferenceKmh = it)) },
                             valueRange = 50f..130f,
-                            colors = SliderDefaults.colors(thumbColor = Color(0xFF38BDF8), activeTrackColor = Color(0xFF38BDF8))
+                            colors = SliderDefaults.colors(thumbColor = AcousticPebbleColors.PrimaryContainer, activeTrackColor = AcousticPebbleColors.PrimaryContainer)
                         )
                     }
                 } else {
                     // Manual Intensity Slider when auto-speed is OFF
                     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("手動騒音コンペンセーション強度 (0〜200%)", color = Color(0xFFCBD5E1), fontSize = 11.sp)
+                            Text("手動騒音コンペンセーション強度 (0〜200%)", color = AcousticPebbleColors.OnSurface, fontSize = 11.sp)
                             Text(
                                 text = "${(config.carCabinIntensity * 100).toInt()}% (+${"%.1f".format(config.carCabinIntensity * 4.4f)} dB)",
-                                color = Color(0xFFD4AF37),
+                                color = AcousticPebbleColors.TertiaryContainer,
                                 fontSize = 11.sp,
-                                fontFamily = FontFamily.Monospace,
+                                fontFamily = PlusJakartaSansFamily,
+                                letterSpacing = 0.5.sp,
                                 fontWeight = FontWeight.Bold
                             )
                         }
@@ -525,7 +537,7 @@ fun LoudnessNormalizerCard(
                             value = config.carCabinIntensity.coerceIn(0f, 2f),
                             onValueChange = { onConfigChange(config.copy(carCabinIntensity = it)) },
                             valueRange = 0f..2f,
-                            colors = SliderDefaults.colors(thumbColor = Color(0xFFD4AF37), activeTrackColor = Color(0xFFD4AF37))
+                            colors = SliderDefaults.colors(thumbColor = AcousticPebbleColors.TertiaryContainer, activeTrackColor = AcousticPebbleColors.TertiaryContainer)
                         )
                     }
                 }
