@@ -156,10 +156,8 @@ fun LibraryScreen(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     items(filtered, key = { it.id }, contentType = { "track_row" }) { track ->
-                        TrackRowCard(
-                            track = track,
-                            isCurrent = currentTrack?.id == track.id,
-                            onPlay = {
+                        val onPlay = remember(track.id, filtered) {
+                            {
                                 viewModel.playScope(
                                     scope = PlaybackScopeType.ALL_LIBRARY,
                                     scopeTitle = "全曲ライブラリ (${filtered.size}曲)",
@@ -167,9 +165,20 @@ fun LibraryScreen(
                                     startTrack = track
                                 )
                                 onOpenPlayerTab()
-                            },
-                            onAddToPlaylist = { onOpenPlaylistAssignDialog(track) },
-                            onEnqueueNext = { viewModel.enqueueTrackNext(track) }
+                            }
+                        }
+                        val onAddToPlaylist = remember(track.id) {
+                            { onOpenPlaylistAssignDialog(track) }
+                        }
+                        val onEnqueueNext = remember(track.id) {
+                            { viewModel.enqueueTrackNext(track) }
+                        }
+                        TrackRowCard(
+                            track = track,
+                            isCurrent = currentTrack?.id == track.id,
+                            onPlay = onPlay,
+                            onAddToPlaylist = onAddToPlaylist,
+                            onEnqueueNext = onEnqueueNext
                         )
                     }
                 }

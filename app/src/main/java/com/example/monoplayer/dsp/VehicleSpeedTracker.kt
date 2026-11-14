@@ -11,6 +11,8 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.HandlerThread
 import android.os.Looper
 import android.os.SystemClock
 import androidx.core.content.ContextCompat
@@ -107,6 +109,9 @@ class VehicleSpeedTracker(private val context: Context) : LocationListener, Sens
     @Volatile var isTracking = false
         private set
 
+    private var sensorThread: HandlerThread? = null
+    private var sensorHandler: Handler? = null
+
     // Speed & native states
     private var nativeHandle: Long = 0L
     private val nativeOut2 = FloatArray(2)
@@ -198,18 +203,23 @@ class VehicleSpeedTracker(private val context: Context) : LocationListener, Sens
 
         registerGpsUpdates()
 
-        // Register IMU sensors for 3D holder tracking & handheld detection
+        // Register IMU sensors on dedicated background HandlerThread so UI/Compose frames never stall
+        val thread = HandlerThread("MonoPlayerImuThread").apply { start() }
+        val handler = Handler(thread.looper)
+        sensorThread = thread
+        sensorHandler = handler
+
         linearAccelSensor?.let { sensor ->
-            sensorManager?.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL)
+            sensorManager?.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL, handler)
         }
         gravitySensor?.let { sensor ->
-            sensorManager?.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL)
+            sensorManager?.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL, handler)
         }
         rawAccelSensor?.let { sensor ->
-            sensorManager?.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL)
+            sensorManager?.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL, handler)
         }
         gyroSensor?.let { sensor ->
-            sensorManager?.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL)
+            sensorManager?.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL, handler)
         }
 
         DspStateHolder.updateVehicleSpeed(0f, SpeedTrackingSource.GPS, forwardCalibrated = false)
@@ -226,6 +236,9 @@ class VehicleSpeedTracker(private val context: Context) : LocationListener, Sens
             sensorManager?.unregisterListener(this)
         } catch (_: Exception) {
         }
+        sensorThread?.quitSafely()
+        sensorThread = null
+        sensorHandler = null
 
         if (nativeHandle != 0L) {
             RustNativeBridge.nativeVehicleTrackerReset(nativeHandle)

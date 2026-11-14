@@ -182,18 +182,6 @@ class MonoPlayerViewModel(application: Application) : AndroidViewModel(applicati
             DspStateHolder.setManualSyncOffsetMs(prefsRepo.loadSyncOffsetMs())
             DspStateHolder.isInitializedFromPrefs = true
         }
-        viewModelScope.launch {
-            DspStateHolder.loudnessConfigFlow.drop(1).collect { prefsRepo.saveLoudnessConfig(it) }
-        }
-        viewModelScope.launch {
-            DspStateHolder.dynamicEqConfigFlow.drop(1).collect { prefsRepo.saveDynamicEqConfig(it) }
-        }
-        viewModelScope.launch {
-            DspStateHolder.spatialConfigFlow.drop(1).collect { prefsRepo.saveSpatialConfig(it) }
-        }
-        viewModelScope.launch {
-            DspStateHolder.syncOffsetMsFlow.drop(1).collect { prefsRepo.saveSyncOffsetMs(it) }
-        }
         restorePersistedSessionIfAvailable(_allTracks.value, syncPlayerIfIdle = false)
         connectMediaSession()
         rescanLibrary(autoStartDemoIfIdle = true)

@@ -44,9 +44,11 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.SettableFuture
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 
@@ -58,7 +60,7 @@ import kotlinx.coroutines.launch
  *   sink detection so MonoPlayer wins Bluetooth auto-play priority and resumes the last played track.
  * - Injects [MonoDspAudioProcessor] directly into ExoPlayer's [DefaultAudioSink] pipeline.
  */
-@OptIn(UnstableApi::class)
+@OptIn(UnstableApi::class, FlowPreview::class)
 class MonoPlaybackService : MediaSessionService() {
 
     private var mediaSession: MediaSession? = null
@@ -155,17 +157,25 @@ class MonoPlaybackService : MediaSessionService() {
             DspStateHolder.setManualSyncOffsetMs(prefsRepo.loadSyncOffsetMs())
             DspStateHolder.isInitializedFromPrefs = true
         }
-        serviceScope.launch {
-            DspStateHolder.loudnessConfigFlow.drop(1).collect { prefsRepo.saveLoudnessConfig(it) }
+        serviceScope.launch(Dispatchers.IO) {
+            DspStateHolder.loudnessConfigFlow.drop(1).debounce(500L).collect {
+                prefsRepo.saveLoudnessConfig(it)
+            }
         }
-        serviceScope.launch {
-            DspStateHolder.dynamicEqConfigFlow.drop(1).collect { prefsRepo.saveDynamicEqConfig(it) }
+        serviceScope.launch(Dispatchers.IO) {
+            DspStateHolder.dynamicEqConfigFlow.drop(1).debounce(300L).collect {
+                prefsRepo.saveDynamicEqConfig(it)
+            }
         }
-        serviceScope.launch {
-            DspStateHolder.spatialConfigFlow.drop(1).collect { prefsRepo.saveSpatialConfig(it) }
+        serviceScope.launch(Dispatchers.IO) {
+            DspStateHolder.spatialConfigFlow.drop(1).debounce(300L).collect {
+                prefsRepo.saveSpatialConfig(it)
+            }
         }
-        serviceScope.launch {
-            DspStateHolder.syncOffsetMsFlow.drop(1).collect { prefsRepo.saveSyncOffsetMs(it) }
+        serviceScope.launch(Dispatchers.IO) {
+            DspStateHolder.syncOffsetMsFlow.drop(1).debounce(300L).collect {
+                prefsRepo.saveSyncOffsetMs(it)
+            }
         }
 
         val dspProcessor = MonoDspAudioProcessor()
