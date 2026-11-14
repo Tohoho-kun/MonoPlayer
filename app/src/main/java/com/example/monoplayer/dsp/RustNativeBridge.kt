@@ -269,4 +269,20 @@ object RustNativeBridge {
     retention: Float,
     maxR: Float,
   ): Float
+
+  // --- Unified DSP Pipeline ---
+  @JvmStatic external fun nativePipelineCreate(sampleRate: Int): Long
+  @JvmStatic external fun nativePipelineDestroy(handle: Long)
+  @JvmStatic external fun nativePipelineSetSampleRate(handle: Long, sampleRate: Int)
+  @JvmStatic external fun nativePipelineReset(handle: Long)
+  @JvmStatic external fun nativePipelineProcessBlockF32(
+    handle: Long,
+    inBuf: FloatArray,
+    outBuf: FloatArray,
+    numFrames: Int,
+    inChannels: Int,
+    outChannels: Int,
+    params: FloatArray,
+    telemetryOut: FloatArray,
+  )
 }

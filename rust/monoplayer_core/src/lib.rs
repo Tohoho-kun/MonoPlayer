@@ -10,6 +10,7 @@ pub mod fft;
 pub mod jni_bridge;
 pub mod loudness;
 pub mod math_guard;
+pub mod pipeline;
 pub mod rain_render;
 pub mod spatial_depth;
 pub mod stft_mono;

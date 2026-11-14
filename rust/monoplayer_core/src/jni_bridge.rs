@@ -1368,3 +1368,147 @@ pub extern "system" fn Java_com_example_monoplayer_dsp_RustNativeBridge_nativeSt
         }
     }));
 }
+
+// =========================================================================
+// Unified PipelineEngine JNI
+// =========================================================================
+
+#[no_mangle]
+pub extern "system" fn Java_com_example_monoplayer_dsp_RustNativeBridge_nativePipelineCreate(
+    _env: *mut c_void,
+    _class: *mut c_void,
+    sample_rate: i32,
+) -> i64 {
+    catch_unwind(|| Box::into_raw(Box::new(crate::pipeline::PipelineEngine::new(sample_rate))) as i64)
+        .unwrap_or(0)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_example_monoplayer_dsp_RustNativeBridge_nativePipelineDestroy(
+    _env: *mut c_void,
+    _class: *mut c_void,
+    handle: i64,
+) {
+    let _ = catch_unwind(|| {
+        if handle != 0 {
+            unsafe {
+                drop(Box::from_raw(handle as *mut crate::pipeline::PipelineEngine));
+            }
+        }
+    });
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_example_monoplayer_dsp_RustNativeBridge_nativePipelineSetSampleRate(
+    _env: *mut c_void,
+    _class: *mut c_void,
+    handle: i64,
+    sample_rate: i32,
+) {
+    let _ = catch_unwind(|| {
+        if handle != 0 {
+            unsafe {
+                (&mut *(handle as *mut crate::pipeline::PipelineEngine)).set_sample_rate(sample_rate);
+            }
+        }
+    });
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_example_monoplayer_dsp_RustNativeBridge_nativePipelineReset(
+    _env: *mut c_void,
+    _class: *mut c_void,
+    handle: i64,
+) {
+    let _ = catch_unwind(|| {
+        if handle != 0 {
+            unsafe {
+                (&mut *(handle as *mut crate::pipeline::PipelineEngine)).reset();
+            }
+        }
+    });
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_example_monoplayer_dsp_RustNativeBridge_nativePipelineProcessBlockF32(
+    env: JNIEnvPtr,
+    _class: *mut c_void,
+    handle: i64,
+    in_arr: JFloatArray,
+    out_arr: JFloatArray,
+    num_frames: i32,
+    in_channels: i32,
+    out_channels: i32,
+    params_arr: JFloatArray,
+    telemetry_arr: JFloatArray,
+) {
+    let _ = catch_unwind(AssertUnwindSafe(|| {
+        if handle == 0 || num_frames <= 0 || in_channels <= 0 || out_channels <= 0 {
+            return;
+        }
+        let nf = num_frames as usize;
+        let ic = in_channels as usize;
+        let oc = out_channels as usize;
+
+        let mut p = [0.0f32; 60];
+        unsafe {
+            jni_get_f32(env, params_arr, &mut p);
+        }
+
+        let mut in_buf = vec![0.0f32; nf * ic];
+        unsafe {
+            jni_get_f32(env, in_arr, &mut in_buf);
+        }
+        let mut out_buf = vec![0.0f32; nf * oc];
+        let mut tel_buf = [0.0f32; 80];
+
+        let mut dyn_packed = [0.0f32; 25];
+        dyn_packed.copy_from_slice(&p[35..60]);
+        let dyn_eq = unpack_dyn_eq_params(&dyn_packed);
+
+        let mut eq_gains = [0.0f32; 10];
+        eq_gains.copy_from_slice(&p[8..18]);
+
+        let params = crate::pipeline::PipelineParams {
+            algo: p[0] as i32,
+            blend: p[1],
+            crossover_hz: p[2],
+            preamp_linear: p[3],
+            base_external_multiplier: p[4],
+            is_crossfade_active: p[5] > 0.5,
+            cf_sec: p[6],
+            eq_enabled: p[7] > 0.5,
+            eq_gains,
+            declip: DeclipParams {
+                enabled: p[18] > 0.5,
+                sensitivity: p[19],
+                min_amplitude: p[20],
+                max_reconstruct_ratio: p[21],
+            },
+            loudness: LoudnessParams {
+                mode: LoudnessModeCode::from_i32(p[22] as i32),
+                normal_target_lufs: p[23],
+                car_target_lufs: p[24],
+                car_cabin_intensity: p[25],
+            },
+            spatial: SpatialParams {
+                is_narrow_stereo: p[27] > 0.5,
+                narrow_width_percent: p[28],
+                depth_enabled: p[29] > 0.5,
+                depth_amount: p[30],
+                pre_delay_ms: p[31],
+                room_decay: p[32],
+                front_back_contrast: p[33],
+            },
+            dyn_eq,
+        };
+
+        unsafe {
+            let eng = &mut *(handle as *mut crate::pipeline::PipelineEngine);
+            eng.process_block_f32(&in_buf, &mut out_buf, nf, ic, oc, &params, &mut tel_buf);
+            jni_set_f32(env, out_arr, &out_buf);
+            jni_set_f32(env, telemetry_arr, &tel_buf);
+        }
+    }));
+}
+
