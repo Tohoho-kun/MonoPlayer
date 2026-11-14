@@ -151,7 +151,8 @@ data class PlayerDisplayConfig(
     val showAudioFormatBadge: Boolean = false,
     val showDspFormulaAndMetrics: Boolean = false,
     val showInlineQuickEqBar: Boolean = false,
-    val showScopeAndPlaylistBar: Boolean = false
+    val showScopeAndPlaylistBar: Boolean = false,
+    val showCpuUsage: Boolean = false
 ) {
     val isVisualizerStage: Boolean
         get() = showVisualizer || !showJacketArt

@@ -1,6 +1,10 @@
 package com.example.monoplayer.ui
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.*
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -224,12 +228,19 @@ fun DspAndEqScreen(
         }
 
         // Section 1.5: Stereo-Informed Z-Axis Mono Depth & Narrow Stereo Stage
-        SpatialDepthStageCard(
-            config = spatialConfig,
-            telemetry = telemetry,
-            onUpdateConfig = { DspStateHolder.updateSpatialConfig(it) },
-            onSelectPreset = { DspStateHolder.applySpatialPreset(it) }
-        )
+        CollapsibleDspGroup(
+            title = "空間・Z軸奥行きステージ",
+            enabled = spatialConfig.depthEnabled,
+            onToggle = { DspStateHolder.updateSpatialConfig(spatialConfig.copy(depthEnabled = it)) },
+            presetLabel = spatialConfig.presetName
+        ) {
+            SpatialDepthStageCard(
+                config = spatialConfig,
+                telemetry = telemetry,
+                onUpdateConfig = { DspStateHolder.updateSpatialConfig(it) },
+                onSelectPreset = { DspStateHolder.applySpatialPreset(it) }
+            )
+        }
 
         // Section 2: Preamp Gain & Crossfade Controls
         Column(
@@ -306,28 +317,57 @@ fun DspAndEqScreen(
         }
 
         // Section 2.3: Anti-Clipping Reconstruction & De-Clicking
-        DeclipRestorationCard(
-            config = declipConfig,
-            telemetry = telemetry,
-            onConfigChange = { DspStateHolder.updateDeclipConfig(it) }
-        )
+        CollapsibleDspGroup(
+            title = "デクリッピング・波形修復",
+            enabled = declipConfig.enabled,
+            onToggle = { DspStateHolder.updateDeclipConfig(declipConfig.copy(enabled = it)) }
+        ) {
+            DeclipRestorationCard(
+                config = declipConfig,
+                telemetry = telemetry,
+                onConfigChange = { DspStateHolder.updateDeclipConfig(it) }
+            )
+        }
 
         // Section 2.5: On-the-Fly Psychoacoustic Loudness Normalizer (Normal Hi-Fi & Noisy Car Modes)
-        LoudnessNormalizerCard(
-            config = loudnessConfig,
-            telemetry = telemetry,
-            onConfigChange = { DspStateHolder.updateLoudnessConfig(it) }
-        )
+        CollapsibleDspGroup(
+            title = "ラウドネス正規化・車載モード",
+            enabled = loudnessConfig.mode != com.example.monoplayer.dsp.LoudnessMode.OFF,
+            onToggle = { on ->
+                val nextMode = if (on) com.example.monoplayer.dsp.LoudnessMode.NORMAL_HIFI else com.example.monoplayer.dsp.LoudnessMode.OFF
+                DspStateHolder.updateLoudnessConfig(loudnessConfig.copy(mode = nextMode))
+            },
+            presetLabel = loudnessConfig.mode.name
+        ) {
+            LoudnessNormalizerCard(
+                config = loudnessConfig,
+                telemetry = telemetry,
+                onConfigChange = { DspStateHolder.updateLoudnessConfig(it) }
+            )
+        }
 
         // Section 2.8: Low / Mid / High 3-Band Dynamic EQ
-        DynamicEqRackCard(
-            config = dynamicEqConfig,
-            telemetry = telemetry,
-            onConfigChange = { DspStateHolder.updateDynamicEqConfig(it) },
-            onPresetSelect = { DspStateHolder.applyDynamicEqPreset(it) }
-        )
+        CollapsibleDspGroup(
+            title = "3バンド・ダイナミックEQ",
+            enabled = dynamicEqConfig.enabled,
+            onToggle = { DspStateHolder.updateDynamicEqConfig(dynamicEqConfig.copy(enabled = it)) },
+            presetLabel = dynamicEqConfig.presetName
+        ) {
+            DynamicEqRackCard(
+                config = dynamicEqConfig,
+                telemetry = telemetry,
+                onConfigChange = { DspStateHolder.updateDynamicEqConfig(it) },
+                onPresetSelect = { DspStateHolder.applyDynamicEqPreset(it) }
+            )
+        }
 
         // Section 3: 10-Band Graphic Equalizer (31Hz - 16kHz)
+        CollapsibleDspGroup(
+            title = "10バンド・グラフィックEQ",
+            enabled = eqEnabled,
+            onToggle = { DspStateHolder.eqEnabled = it },
+            presetLabel = activePreset
+        ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -448,6 +488,7 @@ fun DspAndEqScreen(
                 }
             }
         }
+        }
     }
 }
 
@@ -487,4 +528,72 @@ private fun VerticalEqSlider(
                 }
             }
     )
+}
+
+@Composable
+private fun CollapsibleDspGroup(
+    title: String,
+    enabled: Boolean,
+    onToggle: (Boolean) -> Unit,
+    presetLabel: String? = null,
+    initiallyExpanded: Boolean = false,
+    content: @Composable () -> Unit
+) {
+    var expanded by remember { mutableStateOf(initiallyExpanded) }
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(Color(0xFF0B1120))
+            .border(1.dp, if (enabled) Color(0xFF334155) else Color(0xFF1E293B), RoundedCornerShape(14.dp))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { expanded = !expanded }
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Icon(
+                    imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    contentDescription = if (expanded) "収納" else "展開",
+                    tint = Color(0xFF94A3B8),
+                    modifier = Modifier.size(20.dp)
+                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = title,
+                        color = if (enabled) Color.White else Color(0xFF94A3B8),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    if (enabled && !expanded && !presetLabel.isNullOrBlank()) {
+                        Text(
+                            text = "プリセット: $presetLabel",
+                            color = Color(0xFF38BDF8),
+                            fontSize = 11.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+            }
+            Switch(
+                checked = enabled,
+                onCheckedChange = onToggle,
+                colors = SwitchDefaults.colors(checkedThumbColor = Color(0xFF38BDF8))
+            )
+        }
+        AnimatedVisibility(visible = expanded) {
+            Box(modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 10.dp)) {
+                content()
+            }
+        }
+    }
 }

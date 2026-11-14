@@ -290,6 +290,30 @@ fun NowPlayingScreen(
                         fontFamily = FontFamily.Monospace
                     )
                 }
+                if (displayConfig.showCpuUsage) {
+                    var cpuPercent by remember { mutableFloatStateOf(0f) }
+                    LaunchedEffect(Unit) {
+                        var lastWall = android.os.SystemClock.elapsedRealtime()
+                        var lastCpu = android.os.Process.getElapsedCpuTime()
+                        val cores = Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
+                        while (true) {
+                            kotlinx.coroutines.delay(1000L)
+                            val nowWall = android.os.SystemClock.elapsedRealtime()
+                            val nowCpu = android.os.Process.getElapsedCpuTime()
+                            val dWall = (nowWall - lastWall).coerceAtLeast(1L)
+                            val dCpu = (nowCpu - lastCpu).coerceAtLeast(0L)
+                            cpuPercent = ((dCpu.toFloat() / dWall.toFloat()) * 100f / cores).coerceIn(0f, 100f)
+                            lastWall = nowWall
+                            lastCpu = nowCpu
+                        }
+                    }
+                    Text(
+                        text = "CPU ${String.format(java.util.Locale.US, "%.1f", cpuPercent)}%",
+                        color = Color(0xFF94A3B8),
+                        fontSize = 10.sp,
+                        fontFamily = FontFamily.Monospace
+                    )
+                }
             }
 
             // 4. Calm Luxury Obsidian, Midnight Blue, Purple & Gold Transport Deck
