@@ -99,7 +99,7 @@ fun QueueScreen(
                     val posText = if (activeQueue.isEmpty()) "0 / 0" else "${activeQueueIndex + 1} / ${activeQueue.size} 曲目"
                     Text(
                         text = "$posText • 全${activeQueue.size}曲 • 合計 ${formatDurationMs(totalDurationMs)}",
-                        color = Color(0xFF94A3B8),
+                        color = AcousticPebbleColors.OnSurfaceVariant,
                         fontSize = 11.sp
                     )
                 }
@@ -270,7 +270,7 @@ fun QueueScreen(
                                 } else {
                                     Text(
                                         text = "%02d".format(index + 1),
-                                        color = if (index < activeQueueIndex) Color(0xFF475569) else Color(0xFF94A3B8),
+                                        color = if (index < activeQueueIndex) Color(0xFF475569) else AcousticPebbleColors.OnSurfaceVariant,
                                         fontSize = 11.sp,
                                         fontFamily = FontFamily.Monospace
                                     )
@@ -310,7 +310,7 @@ fun QueueScreen(
                                     Icon(
                                         imageVector = Icons.Default.KeyboardArrowUp,
                                         contentDescription = "上へ移動",
-                                        tint = if (index > 0) Color(0xFF94A3B8) else Color(0xFF334155),
+                                        tint = if (index > 0) AcousticPebbleColors.OnSurfaceVariant else AcousticPebbleColors.OutlineVariant,
                                         modifier = Modifier.size(18.dp)
                                     )
                                 }
@@ -322,7 +322,7 @@ fun QueueScreen(
                                     Icon(
                                         imageVector = Icons.Default.KeyboardArrowDown,
                                         contentDescription = "下へ移動",
-                                        tint = if (index < activeQueue.lastIndex) Color(0xFF94A3B8) else Color(0xFF334155),
+                                        tint = if (index < activeQueue.lastIndex) AcousticPebbleColors.OnSurfaceVariant else AcousticPebbleColors.OutlineVariant,
                                         modifier = Modifier.size(18.dp)
                                     )
                                 }
@@ -345,7 +345,7 @@ fun QueueScreen(
                                     Icon(
                                         imageVector = Icons.Default.Close,
                                         contentDescription = "キューから削除",
-                                        tint = if (activeQueue.size > 1) Color(0xFFFB7185) else Color(0xFF334155),
+                                        tint = if (activeQueue.size > 1) AcousticPebbleColors.Error else AcousticPebbleColors.OutlineVariant,
                                         modifier = Modifier.size(16.dp)
                                     )
                                 }

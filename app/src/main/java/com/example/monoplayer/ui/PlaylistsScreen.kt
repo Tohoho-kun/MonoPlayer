@@ -54,7 +54,7 @@ fun PlaylistsSection(
                     )
                     Text(
                         text = "1曲を複数のプレイリストに重複登録可能",
-                        color = Color(0xFF94A3B8),
+                        color = AcousticPebbleColors.OnSurfaceVariant,
                         fontSize = 11.sp
                     )
                 }
@@ -63,7 +63,7 @@ fun PlaylistsSection(
                     onClick = { showCreatePlaylistDialog = true },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFFC8A24A),
-                        contentColor = Color(0xFF040408)
+                        contentColor = AcousticPebbleColors.Surface
                     )
                 ) {
                     Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
@@ -173,7 +173,7 @@ fun PlaylistsSection(
                                 )
                                 Column {
                                     Text(t.title, fontSize = 12.sp, fontWeight = FontWeight.Medium)
-                                    Text(t.canonicalArtistName, fontSize = 10.sp, color = Color(0xFF94A3B8))
+                                    Text(t.canonicalArtistName, fontSize = 10.sp, color = AcousticPebbleColors.OnSurfaceVariant)
                                 }
                             }
                         }
@@ -238,7 +238,7 @@ private fun PlaylistCard(
                 if (playlist.description.isNotBlank()) {
                     Text(
                         text = playlist.description,
-                        color = Color(0xFF94A3B8),
+                        color = AcousticPebbleColors.OnSurfaceVariant,
                         fontSize = 11.sp
                     )
                 }
@@ -269,7 +269,7 @@ private fun PlaylistCard(
         }
 
         if (expanded) {
-            HorizontalDivider(color = Color(0xFF1E293B))
+            HorizontalDivider(color = AcousticPebbleColors.SurfaceContainerHigh)
             if (tracks.isEmpty()) {
                 Text(
                     text = "曲がありません。ライブラリまたはキューの「＋」ボタンから追加してください。",
@@ -304,7 +304,7 @@ private fun PlaylistCard(
                                     Icon(
                                         imageVector = Icons.Default.Close,
                                         contentDescription = "このプレイリストから外す",
-                                        tint = Color(0xFFFB7185),
+                                        tint = AcousticPebbleColors.Error,
                                         modifier = Modifier.size(16.dp)
                                     )
                                 }
