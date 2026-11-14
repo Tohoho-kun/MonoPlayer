@@ -350,6 +350,9 @@ class MonoDspAudioProcessor : AudioProcessor {
                     dynEqDetectedDb = floatArrayOf(pipelineTelemetry16[6], pipelineTelemetry16[7], pipelineTelemetry16[8]),
                     dynEqGainDeltaDb = floatArrayOf(pipelineTelemetry16[9], pipelineTelemetry16[10], pipelineTelemetry16[11]),
                     declipRate = pipelineTelemetry16[13],
+                    detectedSpeedKmh = DspStateHolder.currentDetectedSpeedKmh,
+                    speedSource = DspStateHolder.currentSpeedSource,
+                    carForwardCalibrated = DspStateHolder.currentCarForwardCalibrated,
                 )
             )
 

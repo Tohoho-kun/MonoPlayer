@@ -33,9 +33,13 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.monoplayer.dsp.DspStateHolder
 import com.example.monoplayer.dsp.LoudnessConfig
 import com.example.monoplayer.dsp.LoudnessMode
 import com.example.monoplayer.dsp.SpeedTrackingSource
@@ -49,15 +53,33 @@ fun LoudnessNormalizerCard(
     onConfigChange: (LoudnessConfig) -> Unit
 ) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     var hasLocationPerm by remember {
         mutableStateOf(VehicleSpeedTracker.hasLocationPermission(context))
+    }
+
+    DisposableEffect(lifecycleOwner, context) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                val nowPerm = VehicleSpeedTracker.hasLocationPermission(context)
+                if (nowPerm != hasLocationPerm) {
+                    hasLocationPerm = nowPerm
+                    if (nowPerm) {
+                        DspStateHolder.notifyLocationPermissionGranted()
+                    }
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     val locationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { perms ->
-        hasLocationPerm = perms.values.any { it }
+        hasLocationPerm = perms.values.any { it } || VehicleSpeedTracker.hasLocationPermission(context)
         if (hasLocationPerm) {
+            DspStateHolder.notifyLocationPermissionGranted()
             onConfigChange(config.copy(autoSpeedEnabled = true))
         } else {
             onConfigChange(config.copy(autoSpeedEnabled = false))

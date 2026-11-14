@@ -290,4 +290,29 @@ class VehicleSpeedTrackerTest {
 
         DspStateHolder.updateVehicleSpeed(0f, SpeedTrackingSource.OFF, forwardCalibrated = false)
     }
+
+    @Test
+    fun publishTelemetryAndPollSyncedPreserveVehicleSpeed() {
+        try {
+            DspStateHolder.updateVehicleSpeed(72.5f, SpeedTrackingSource.GPS, forwardCalibrated = true)
+
+            // Simulate native pipeline audio frame publishing default speed (0f / OFF)
+            DspStateHolder.publishTelemetry(
+                data = VisualizerTelemetry(rmsLinear = 0.25f),
+                produceRealtimeMs = 1_000L,
+                queuedStreamMs = 0L
+            )
+
+            assertEquals(72.5f, DspStateHolder.telemetry.value.detectedSpeedKmh, 1e-4f)
+            assertEquals(SpeedTrackingSource.GPS, DspStateHolder.telemetry.value.speedSource)
+            assertTrue(DspStateHolder.telemetry.value.carForwardCalibrated)
+
+            val polled = DspStateHolder.pollSyncedTelemetry(1_000L)
+            assertEquals(72.5f, polled.detectedSpeedKmh, 1e-4f)
+            assertEquals(SpeedTrackingSource.GPS, polled.speedSource)
+            assertTrue(polled.carForwardCalibrated)
+        } finally {
+            DspStateHolder.updateVehicleSpeed(0f, SpeedTrackingSource.OFF, forwardCalibrated = false)
+        }
+    }
 }
