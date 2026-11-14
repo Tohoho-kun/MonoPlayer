@@ -104,7 +104,7 @@ fun NowPlayingScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF040408))
+            .background(AcousticPebbleColors.Surface)
             .drawBehind {
                 drawCircle(
                     brush = Brush.radialGradient(
@@ -285,7 +285,7 @@ fun NowPlayingScreen(
                 if (displayConfig.showAudioFormatBadge && currentTrack != null) {
                     Text(
                         text = "${currentTrack!!.sampleRate} Hz / ${currentTrack!!.bitrateKbps} kbps",
-                        color = Color(0xFF6E7C9E),
+                        color = AcousticPebbleColors.OnSurfaceVariant,
                         fontSize = 10.sp,
                         fontFamily = FontFamily.Monospace
                     )
@@ -309,7 +309,7 @@ fun NowPlayingScreen(
                     }
                     Text(
                         text = "CPU ${String.format(java.util.Locale.US, "%.1f", cpuPercent)}%",
-                        color = Color(0xFF94A3B8),
+                        color = AcousticPebbleColors.OnSurfaceVariant,
                         fontSize = 10.sp,
                         fontFamily = FontFamily.Monospace
                     )
@@ -323,7 +323,7 @@ fun NowPlayingScreen(
                     .clip(RoundedCornerShape(20.dp))
                     .background(
                         Brush.verticalGradient(
-                            colors = listOf(Color(0xFF0C1024), Color(0xFF070710))
+                            colors = listOf(AcousticPebbleColors.SurfaceContainerLow, AcousticPebbleColors.SurfaceContainerLowest)
                         )
                     )
                     .border(

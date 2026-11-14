@@ -99,7 +99,7 @@ fun SettingsScreen(
                     Icon(
                         imageVector = Icons.Default.Info,
                         contentDescription = "ヘルプ",
-                        tint = Color(0xFF94A3B8),
+                        tint = AcousticPebbleColors.OnSurfaceVariant,
                         modifier = Modifier.size(17.dp)
                     )
                 }
@@ -160,7 +160,7 @@ fun SettingsScreen(
                         Icon(
                             imageVector = Icons.Default.Info,
                             contentDescription = "ヘルプ",
-                            tint = Color(0xFF94A3B8),
+                            tint = AcousticPebbleColors.OnSurfaceVariant,
                             modifier = Modifier.size(17.dp)
                         )
                     }
@@ -254,7 +254,7 @@ fun SettingsScreen(
                                 )
                                 Text(
                                     text = candidate.eraTag,
-                                    color = Color(0xFF94A3B8),
+                                    color = AcousticPebbleColors.OnSurfaceVariant,
                                     fontSize = 9.sp,
                                     fontFamily = FontFamily.Monospace
                                 )
@@ -306,7 +306,7 @@ fun SettingsScreen(
                     Icon(
                         imageVector = Icons.Default.Info,
                         contentDescription = "ヘルプ",
-                        tint = Color(0xFF94A3B8),
+                        tint = AcousticPebbleColors.OnSurfaceVariant,
                         modifier = Modifier.size(17.dp)
                     )
                 }
@@ -332,7 +332,7 @@ fun SettingsScreen(
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = "描画・音声同期微調整",
-                            color = Color(0xFFCBD5E1),
+                            color = AcousticPebbleColors.OnSurface,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium
                         )
@@ -392,7 +392,7 @@ fun SettingsScreen(
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = "曲間クロスフェード時間",
-                            color = Color(0xFFCBD5E1),
+                            color = AcousticPebbleColors.OnSurface,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium
                         )
@@ -481,7 +481,7 @@ fun SettingsScreen(
                     Icon(
                         imageVector = Icons.Default.Info,
                         contentDescription = "ヘルプ",
-                        tint = Color(0xFF94A3B8),
+                        tint = AcousticPebbleColors.OnSurfaceVariant,
                         modifier = Modifier.size(17.dp)
                     )
                 }
@@ -522,13 +522,13 @@ fun SettingsScreen(
         ) {
             Text(
                 "アプリバージョン",
-                color = Color(0xFFCBD5E1),
+                color = AcousticPebbleColors.OnSurface,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Medium
             )
             Text(
                 "v$appVersion",
-                color = Color(0xFF94A3B8),
+                color = AcousticPebbleColors.OnSurfaceVariant,
                 fontSize = 13.sp,
                 fontFamily = FontFamily.Monospace
             )
@@ -555,7 +555,7 @@ fun SettingsScreen(
                 )
                 Text(
                     text = "Media3・Jetpack Compose・Coil・Kotlin 等の権利表記",
-                    color = Color(0xFF94A3B8),
+                    color = AcousticPebbleColors.OnSurfaceVariant,
                     fontSize = 11.sp
                 )
             }
@@ -585,7 +585,7 @@ fun SettingsScreen(
                     text = item.description,
                     fontSize = 13.sp,
                     lineHeight = 18.sp,
-                    color = Color(0xFFCBD5E1)
+                    color = AcousticPebbleColors.OnSurface
                 )
             },
             confirmButton = {
@@ -619,7 +619,7 @@ fun SettingsScreen(
                     Text(
                         text = "本アプリは以下のオープンソースソフトウェア（いずれも Apache License 2.0）を使用しています。",
                         fontSize = 12.sp,
-                        color = Color(0xFFCBD5E1),
+                        color = AcousticPebbleColors.OnSurface,
                         lineHeight = 17.sp
                     )
                     LicenseNoticeBlock(
@@ -646,7 +646,7 @@ fun SettingsScreen(
                         text = "Apache License 2.0 全文: https://www.apache.org/licenses/LICENSE-2.0",
                         fontSize = 10.sp,
                         fontFamily = FontFamily.Monospace,
-                        color = Color(0xFF94A3B8)
+                        color = AcousticPebbleColors.OnSurfaceVariant
                     )
                 }
             },
@@ -673,7 +673,7 @@ private fun LicenseNoticeBlock(name: String, detail: String) {
         verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         Text(text = name, color = Color(0xFFC8A24A), fontSize = 11.sp, fontWeight = FontWeight.Bold)
-        Text(text = detail, color = Color(0xFFCBD5E1), fontSize = 10.sp, lineHeight = 14.sp)
+        Text(text = detail, color = AcousticPebbleColors.OnSurface, fontSize = 10.sp, lineHeight = 14.sp)
     }
 }
 
@@ -701,7 +701,7 @@ private fun StageChoiceButton(
         verticalArrangement = Arrangement.spacedBy(3.dp)
     ) {
         Text(title, color = if (selected) accent else Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-        Text(subtitle, color = Color(0xFF94A3B8), fontSize = 10.sp)
+        Text(subtitle, color = AcousticPebbleColors.OnSurfaceVariant, fontSize = 10.sp)
     }
 }
 
@@ -712,7 +712,7 @@ private fun SettingSwitchRow(label: String, checked: Boolean, onToggle: (Boolean
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(label, color = Color(0xFFCBD5E1), fontSize = 12.sp, modifier = Modifier.weight(1f))
+        Text(label, color = AcousticPebbleColors.OnSurface, fontSize = 12.sp, modifier = Modifier.weight(1f))
         Switch(
             checked = checked,
             onCheckedChange = onToggle,
@@ -737,13 +737,13 @@ private fun SettingSwitchRowWithHelp(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.weight(1f)
         ) {
-            Text(label, color = Color(0xFFCBD5E1), fontSize = 12.sp)
+            Text(label, color = AcousticPebbleColors.OnSurface, fontSize = 12.sp)
             Spacer(modifier = Modifier.width(4.dp))
             IconButton(onClick = onHelp, modifier = Modifier.size(24.dp)) {
                 Icon(
                     imageVector = Icons.Default.Info,
                     contentDescription = "ヘルプ",
-                    tint = Color(0xFF94A3B8),
+                    tint = AcousticPebbleColors.OnSurfaceVariant,
                     modifier = Modifier.size(15.dp)
                 )
             }

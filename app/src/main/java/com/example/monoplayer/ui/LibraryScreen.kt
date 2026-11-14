@@ -63,8 +63,8 @@ fun LibraryScreen(
         // Sub-Tab Selector
         ScrollableTabRow(
             selectedTabIndex = selectedSubTab.ordinal,
-            containerColor = Color(0xFF0F172A),
-            contentColor = Color(0xFF38BDF8),
+            containerColor = AcousticPebbleColors.SurfaceContainerLow,
+            contentColor = AcousticPebbleColors.PrimaryContainer,
             edgePadding = 4.dp,
             modifier = Modifier
                 .fillMaxWidth()
@@ -99,8 +99,8 @@ fun LibraryScreen(
                 singleLine = true,
                 modifier = Modifier.weight(1f),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF38BDF8),
-                    unfocusedBorderColor = Color(0xFF334155),
+                    focusedBorderColor = AcousticPebbleColors.PrimaryContainer,
+                    unfocusedBorderColor = AcousticPebbleColors.OutlineVariant,
                     focusedTextColor = Color.White,
                     unfocusedTextColor = Color.White
                 )
@@ -109,8 +109,8 @@ fun LibraryScreen(
             FilledTonalIconButton(
                 onClick = { viewModel.rescanLibrary() },
                 colors = IconButtonDefaults.filledTonalIconButtonColors(
-                    containerColor = Color(0xFF1E293B),
-                    contentColor = Color(0xFF38BDF8)
+                    containerColor = AcousticPebbleColors.SurfaceContainerHigh,
+                    contentColor = AcousticPebbleColors.PrimaryContainer
                 )
             ) {
                 Icon(Icons.Default.Refresh, contentDescription = "再スキャン")
@@ -119,7 +119,7 @@ fun LibraryScreen(
 
         if (isScanning) {
             LinearProgressIndicator(
-                color = Color(0xFF38BDF8),
+                color = AcousticPebbleColors.PrimaryContainer,
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -283,13 +283,13 @@ fun LibraryScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(Color(0xFF0F172A))
-                                .border(1.dp, Color(0xFF38BDF8).copy(alpha = 0.3f), RoundedCornerShape(10.dp))
+                                .background(AcousticPebbleColors.SurfaceContainerLow)
+                                .border(1.dp, AcousticPebbleColors.PrimaryContainer.copy(alpha = 0.3f), RoundedCornerShape(10.dp))
                                 .padding(10.dp)
                         ) {
                             Text(
                                 text = "アーティスト表記揺れ自動吸収エンジン稼働中：全角/半角・大文字/小文字・ハイフン/波線・「, The」の語順・feat.表記などを自動的に正規化して同一アーティストへ統合しています。手動での統合も可能です。",
-                                color = Color(0xFFCBD5E1),
+                                color = AcousticPebbleColors.OnSurface,
                                 fontSize = 11.sp,
                                 lineHeight = 15.sp
                             )
@@ -348,7 +348,7 @@ fun LibraryScreen(
                     item {
                         Button(
                             onClick = onRequestAddFolder,
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0284C7)),
+                            colors = ButtonDefaults.buttonColors(containerColor = AcousticPebbleColors.PrimaryContainer),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Icon(Icons.Default.CreateNewFolder, contentDescription = null)
@@ -361,7 +361,7 @@ fun LibraryScreen(
                         item {
                             Text(
                                 text = "登録済み探索フォルダ (${safFolders.size}件)",
-                                color = Color(0xFF94A3B8),
+                                color = AcousticPebbleColors.OnSurfaceVariant,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -371,21 +371,21 @@ fun LibraryScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(8.dp))
-                                    .background(Color(0xFF0F172A))
+                                    .background(AcousticPebbleColors.SurfaceContainerLow)
                                     .padding(horizontal = 12.dp, vertical = 8.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
                                     text = uriStr,
-                                    color = Color(0xFFCBD5E1),
+                                    color = AcousticPebbleColors.OnSurface,
                                     fontSize = 11.sp,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                     modifier = Modifier.weight(1f)
                                 )
                                 IconButton(onClick = { viewModel.removeSafFolderUri(uriStr) }) {
-                                    Icon(Icons.Default.Delete, contentDescription = "削除", tint = Color(0xFFFB7185))
+                                    Icon(Icons.Default.Delete, contentDescription = "削除", tint = AcousticPebbleColors.Error)
                                 }
                             }
                         }
@@ -425,8 +425,8 @@ fun LibraryScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(12.dp))
-                                    .background(Color(0xFF0F172A))
-                                    .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(12.dp))
+                                    .background(AcousticPebbleColors.SurfaceContainerLow)
+                                    .border(1.dp, AcousticPebbleColors.SurfaceContainerHigh, RoundedCornerShape(12.dp))
                                     .padding(12.dp),
                                 verticalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
@@ -444,7 +444,7 @@ fun LibraryScreen(
                                         )
                                         Text(
                                             text = "$folderPath (${tracksInFolder.size}曲)",
-                                            color = Color(0xFF94A3B8),
+                                            color = AcousticPebbleColors.OnSurfaceVariant,
                                             fontSize = 10.sp,
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis
@@ -461,8 +461,8 @@ fun LibraryScreen(
                                                 onOpenPlayerTab()
                                             },
                                             colors = ButtonDefaults.filledTonalButtonColors(
-                                                containerColor = Color(0xFF1E293B),
-                                                contentColor = Color(0xFF38BDF8)
+                                                containerColor = AcousticPebbleColors.SurfaceContainerHigh,
+                                                contentColor = AcousticPebbleColors.PrimaryContainer
                                             ),
                                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
                                         ) {
@@ -478,7 +478,7 @@ fun LibraryScreen(
                                                 onOpenPlayerTab()
                                             },
                                             colors = ButtonDefaults.filledTonalButtonColors(
-                                                containerColor = Color(0xFF0284C7),
+                                                containerColor = AcousticPebbleColors.PrimaryContainer,
                                                 contentColor = Color.White
                                             ),
                                             contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
@@ -507,7 +507,7 @@ fun LibraryScreen(
                     Text(
                         text = "検出された元タグ表記:\n${artistGroup.rawVariations.joinToString(" / ")}",
                         fontSize = 12.sp,
-                        color = Color(0xFF94A3B8)
+                        color = AcousticPebbleColors.OnSurfaceVariant
                     )
                     OutlinedTextField(
                         value = targetCanonical,
@@ -556,10 +556,10 @@ fun TrackRowCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(10.dp))
-            .background(if (isCurrent) Color(0xFF1E293B) else Color(0xFF0F172A))
+            .background(if (isCurrent) AcousticPebbleColors.SurfaceContainerHigh else AcousticPebbleColors.SurfaceContainerLow)
             .border(
                 1.dp,
-                if (isCurrent) Color(0xFF38BDF8) else Color(0xFF1E293B),
+                if (isCurrent) AcousticPebbleColors.PrimaryContainer else AcousticPebbleColors.SurfaceContainerHigh,
                 RoundedCornerShape(10.dp)
             )
             .clickable { onPlay() }
@@ -570,7 +570,7 @@ fun TrackRowCard(
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(
                 text = track.title,
-                color = if (isCurrent) Color(0xFF38BDF8) else Color.White,
+                color = if (isCurrent) AcousticPebbleColors.PrimaryContainer else Color.White,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
@@ -583,7 +583,7 @@ fun TrackRowCard(
             }
             Text(
                 text = artistSubtitle,
-                color = Color(0xFF94A3B8),
+                color = AcousticPebbleColors.OnSurfaceVariant,
                 fontSize = 11.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -612,7 +612,7 @@ fun TrackRowCard(
                 Icon(
                     imageVector = Icons.Default.PlaylistAdd,
                     contentDescription = "プレイリストに追加",
-                    tint = Color(0xFF38BDF8)
+                    tint = AcousticPebbleColors.PrimaryContainer
                 )
             }
             trailingAction?.invoke()
@@ -634,10 +634,10 @@ private fun AlbumGroupCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFF0F172A))
+            .background(AcousticPebbleColors.SurfaceContainerLow)
             .border(
                 1.dp,
-                if (isExpanded) Color(0xFF38BDF8).copy(alpha = 0.5f) else Color(0xFF1E293B),
+                if (isExpanded) AcousticPebbleColors.PrimaryContainer.copy(alpha = 0.5f) else AcousticPebbleColors.SurfaceContainerHigh,
                 RoundedCornerShape(12.dp)
             )
             .padding(12.dp),
@@ -659,7 +659,7 @@ private fun AlbumGroupCard(
                 )
                 Text(
                     text = "${album.artistName} • ${album.tracks.size}曲",
-                    color = Color(0xFF94A3B8),
+                    color = AcousticPebbleColors.OnSurfaceVariant,
                     fontSize = 12.sp
                 )
             }
@@ -668,8 +668,8 @@ private fun AlbumGroupCard(
                 FilledTonalButton(
                     onClick = onShuffleAlbum,
                     colors = ButtonDefaults.filledTonalButtonColors(
-                        containerColor = Color(0xFF1E293B),
-                        contentColor = Color(0xFF38BDF8)
+                        containerColor = AcousticPebbleColors.SurfaceContainerHigh,
+                        contentColor = AcousticPebbleColors.PrimaryContainer
                     ),
                     contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
                 ) {
@@ -680,7 +680,7 @@ private fun AlbumGroupCard(
                 FilledTonalButton(
                     onClick = { onPlayAlbum(null) },
                     colors = ButtonDefaults.filledTonalButtonColors(
-                        containerColor = Color(0xFF0284C7),
+                        containerColor = AcousticPebbleColors.PrimaryContainer,
                         contentColor = Color.White
                     ),
                     contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
@@ -693,7 +693,7 @@ private fun AlbumGroupCard(
         }
 
         if (isExpanded) {
-            HorizontalDivider(color = Color(0xFF1E293B))
+            HorizontalDivider(color = AcousticPebbleColors.SurfaceContainerHigh)
             album.tracks.forEach { t ->
                 TrackRowCard(
                     track = t,
@@ -721,10 +721,10 @@ private fun ArtistGroupCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFF0F172A))
+            .background(AcousticPebbleColors.SurfaceContainerLow)
             .border(
                 1.dp,
-                if (isExpanded) Color(0xFF38BDF8).copy(alpha = 0.5f) else Color(0xFF1E293B),
+                if (isExpanded) AcousticPebbleColors.PrimaryContainer.copy(alpha = 0.5f) else AcousticPebbleColors.SurfaceContainerHigh,
                 RoundedCornerShape(12.dp)
             )
             .padding(12.dp),
@@ -763,25 +763,25 @@ private fun ArtistGroupCard(
                 }
                 Text(
                     text = "吸収した表記: ${artist.rawVariations.joinToString(" / ")}",
-                    color = Color(0xFF38BDF8),
+                    color = AcousticPebbleColors.PrimaryContainer,
                     fontSize = 11.sp
                 )
                 Text(
                     text = "${artist.albumsCount} アルバム • 全 ${artist.tracks.size} 曲",
-                    color = Color(0xFF94A3B8),
+                    color = AcousticPebbleColors.OnSurfaceVariant,
                     fontSize = 11.sp
                 )
             }
 
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = onEditAlias, modifier = Modifier.size(32.dp)) {
-                    Icon(Icons.Default.Edit, contentDescription = "名寄せ編集", tint = Color(0xFF94A3B8), modifier = Modifier.size(16.dp))
+                    Icon(Icons.Default.Edit, contentDescription = "名寄せ編集", tint = AcousticPebbleColors.OnSurfaceVariant, modifier = Modifier.size(16.dp))
                 }
                 FilledTonalButton(
                     onClick = onShuffleArtist,
                     colors = ButtonDefaults.filledTonalButtonColors(
-                        containerColor = Color(0xFF1E293B),
-                        contentColor = Color(0xFF38BDF8)
+                        containerColor = AcousticPebbleColors.SurfaceContainerHigh,
+                        contentColor = AcousticPebbleColors.PrimaryContainer
                     ),
                     contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
                 ) {
@@ -792,7 +792,7 @@ private fun ArtistGroupCard(
                 FilledTonalButton(
                     onClick = { onPlayArtist(null) },
                     colors = ButtonDefaults.filledTonalButtonColors(
-                        containerColor = Color(0xFF0284C7),
+                        containerColor = AcousticPebbleColors.PrimaryContainer,
                         contentColor = Color.White
                     ),
                     contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
@@ -805,7 +805,7 @@ private fun ArtistGroupCard(
         }
 
         if (isExpanded) {
-            HorizontalDivider(color = Color(0xFF1E293B))
+            HorizontalDivider(color = AcousticPebbleColors.SurfaceContainerHigh)
             artist.tracks.forEach { t ->
                 TrackRowCard(
                     track = t,
