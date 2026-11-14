@@ -496,6 +496,42 @@ fun SettingsScreen(
             SettingSwitchRow("サンプリング周波数・ビットレート表示", displayConfig.showAudioFormatBadge) {
                 viewModel.updateDisplayConfig(displayConfig.copy(showAudioFormatBadge = it))
             }
+            SettingSwitchRow("CPU使用率を再生画面に表示", displayConfig.showCpuUsage) {
+                viewModel.updateDisplayConfig(displayConfig.copy(showCpuUsage = it))
+            }
+        }
+
+        val ctx = androidx.compose.ui.platform.LocalContext.current
+        val appVersion = remember(ctx) {
+            try {
+                val pInfo = ctx.packageManager.getPackageInfo(ctx.packageName, 0)
+                pInfo.versionName ?: "1.0"
+            } catch (_: Exception) {
+                "1.0"
+            }
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .background(cardBg)
+                .border(1.dp, cardBorder, RoundedCornerShape(16.dp))
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                "アプリバージョン",
+                color = Color(0xFFCBD5E1),
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium
+            )
+            Text(
+                "v$appVersion",
+                color = Color(0xFF94A3B8),
+                fontSize = 13.sp,
+                fontFamily = FontFamily.Monospace
+            )
         }
 
         // Open-Source Licenses & Copyright Notice Card
