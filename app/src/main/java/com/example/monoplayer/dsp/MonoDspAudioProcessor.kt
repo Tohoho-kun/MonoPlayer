@@ -106,6 +106,11 @@ class MonoDspAudioProcessor : AudioProcessor {
     private val declipTemp = FloatArray(2)
 
     // Native Rust STFT Mono Engine & Mastering Peak Limiter
+    private var nativePipelineHandle: Long = 0L
+    private var pipelineInBuf: FloatArray = FloatArray(4096)
+    private var pipelineOutBuf: FloatArray = FloatArray(4096)
+    private val pipelineParams60: FloatArray = FloatArray(60)
+    private val pipelineTelemetry16: FloatArray = FloatArray(80)
     private var nativeStftHandle: Long = 0L
     private var nativeLimiterHandle: Long = 0L
     private val limiterOutPair = FloatArray(3) // [yl, yr, gainReductionDb]
@@ -131,6 +136,11 @@ class MonoDspAudioProcessor : AudioProcessor {
         DspStateHolder.equalizer.setSampleRate(inputAudioFormat.sampleRate)
 
         if (RustNativeBridge.isAvailable) {
+            if (nativePipelineHandle == 0L) {
+                nativePipelineHandle = RustNativeBridge.nativePipelineCreate(inputAudioFormat.sampleRate)
+            } else {
+                RustNativeBridge.nativePipelineSetSampleRate(nativePipelineHandle, inputAudioFormat.sampleRate)
+            }
             if (nativeStftHandle == 0L) {
                 nativeStftHandle = RustNativeBridge.nativeStftMonoCreate(inputAudioFormat.sampleRate)
             } else {
@@ -253,6 +263,108 @@ class MonoDspAudioProcessor : AudioProcessor {
         val signCoef = 1f - exp(-1f / (sr * 0.006f))
         val eqEnabled = DspStateHolder.eqEnabled
         val eq = DspStateHolder.equalizer
+
+        if (nativePipelineHandle != 0L && numFrames > 0) {
+            val inFloats = numFrames * inChannels
+            if (pipelineInBuf.size < inFloats) pipelineInBuf = FloatArray(inFloats)
+            val outFloats = numFrames * 2
+            if (pipelineOutBuf.size < outFloats) pipelineOutBuf = FloatArray(outFloats)
+
+            if (isFloat) {
+                for (i in 0 until inFloats) pipelineInBuf[i] = inputBuffer.float
+            } else {
+                for (i in 0 until inFloats) pipelineInBuf[i] = inputBuffer.short / 32768f
+            }
+
+            val declipCfg = DspStateHolder.declipConfig
+            val loudCfg = DspStateHolder.loudnessConfig
+            val spatialCfg = DspStateHolder.spatialConfig
+            val dynEqCfg = DspStateHolder.dynamicEqConfig
+
+            val p = pipelineParams60
+            p[0] = algo.ordinal.toFloat()
+            p[1] = blend
+            p[2] = crossoverHz
+            p[3] = preampLinear
+            p[4] = baseExternalMultiplier
+            p[5] = if (isCrossfadeActive) 1f else 0f
+            p[6] = cfSec
+            p[7] = if (eqEnabled) 1f else 0f
+            val eqGains = eq.getBandGains()
+            for (b in 0 until 10) p[8 + b] = eqGains[b]
+            p[18] = if (declipCfg.enabled) 1f else 0f
+            p[19] = declipCfg.sensitivity
+            p[20] = declipCfg.minAmplitude
+            p[21] = declipCfg.maxReconstructRatio
+            p[22] = loudCfg.mode.ordinal.toFloat()
+            p[23] = loudCfg.normalTargetLufs
+            p[24] = loudCfg.carTargetLufs
+            p[25] = loudCfg.carCabinIntensity
+            p[26] = 0f
+            p[27] = if (spatialCfg.stageMode == OutputStageMode.NARROW_STEREO) 1f else 0f
+            p[28] = spatialCfg.narrowWidthPercent
+            p[29] = if (spatialCfg.depthEnabled) 1f else 0f
+            p[30] = spatialCfg.depthAmount
+            p[31] = spatialCfg.preDelayMs
+            p[32] = spatialCfg.roomDecay
+            p[33] = spatialCfg.frontBackContrast
+            p[34] = 0f
+            p[35] = if (dynEqCfg.enabled) 1f else 0f
+            val bands = arrayOf(dynEqCfg.low, dynEqCfg.mid, dynEqCfg.high)
+            for (i in 0..2) {
+                val b = bands[i]
+                val off = 36 + i * 8
+                p[off] = if (b.enabled) 1f else 0f
+                p[off + 1] = b.freqHz
+                p[off + 2] = b.q
+                p[off + 3] = b.staticGainDb
+                p[off + 4] = b.thresholdDb
+                p[off + 5] = b.maxDynamicGainDb
+                p[off + 6] = b.attackMs
+                p[off + 7] = b.releaseMs
+            }
+
+            RustNativeBridge.nativePipelineProcessBlockF32(
+                nativePipelineHandle,
+                pipelineInBuf,
+                pipelineOutBuf,
+                numFrames,
+                inChannels,
+                2,
+                p,
+                pipelineTelemetry16,
+            )
+
+            val rmsL = pipelineTelemetry16[4]
+            val rmsR = pipelineTelemetry16[5]
+            val dbL = if (rmsL > 1e-6f) 20f * log10(rmsL) else -96f
+            val dbR = if (rmsR > 1e-6f) 20f * log10(rmsR) else -96f
+            val rms = sqrt(0.5f * (rmsL * rmsL + rmsR * rmsR))
+            DspStateHolder.publishTelemetry(
+                VisualizerTelemetry(
+                    spectrumDb = pipelineTelemetry16.copyOfRange(14, 14 + NUM_BANDS),
+                    vuLeftDb = dbL,
+                    vuRightDb = dbR,
+                    rmsLinear = rms.coerceIn(0f, 1f),
+                    limiterGrDb = pipelineTelemetry16[3],
+                    dynEqDetectedDb = floatArrayOf(pipelineTelemetry16[6], pipelineTelemetry16[7], pipelineTelemetry16[8]),
+                    dynEqGainDeltaDb = floatArrayOf(pipelineTelemetry16[9], pipelineTelemetry16[10], pipelineTelemetry16[11]),
+                    declipRate = pipelineTelemetry16[13],
+                )
+            )
+
+            for (i in 0 until outFloats) {
+                val s = pipelineOutBuf[i]
+                if (isFloat) {
+                    internalBuffer.putFloat(s)
+                } else {
+                    internalBuffer.putShort((s.coerceIn(-1f, 1f) * 32767f).toInt().toShort())
+                }
+            }
+            internalBuffer.flip()
+            outputBuffer = internalBuffer
+            return
+        }
         val stereoDepth = DspStateHolder.stereoDepth
         val spatialCfg = DspStateHolder.spatialConfig
         val loudNorm = DspStateHolder.loudnessNormalizer
@@ -725,6 +837,9 @@ class MonoDspAudioProcessor : AudioProcessor {
         DspStateHolder.loudnessNormalizer.resetForNewTrack()
         DspStateHolder.dynamicEq.reset()
         DspStateHolder.equalizer.resetState()
+        if (nativePipelineHandle != 0L) {
+            RustNativeBridge.nativePipelineReset(nativePipelineHandle)
+        }
         if (nativeStftHandle != 0L) {
             RustNativeBridge.nativeStftMonoReset(nativeStftHandle)
         }
@@ -735,6 +850,10 @@ class MonoDspAudioProcessor : AudioProcessor {
 
     override fun reset() {
         flush()
+        if (nativePipelineHandle != 0L) {
+            RustNativeBridge.nativePipelineDestroy(nativePipelineHandle)
+            nativePipelineHandle = 0L
+        }
         if (nativeStftHandle != 0L) {
             RustNativeBridge.nativeStftMonoDestroy(nativeStftHandle)
             nativeStftHandle = 0L
